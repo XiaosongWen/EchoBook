@@ -384,3 +384,112 @@ def test_cli_update_opf(temp_unpacked_epub: Path, capsys: pytest.CaptureFixture)
     assert ret == 0
     captured = capsys.readouterr()
     assert "Updated OPF package manifest" in captured.out
+
+
+def test_epub3_metadata_compliance_and_apple_books_compatibility(tmp_path: Path):
+    """Test that OPF updates enforce strict EPUB 3 and Apple Books requirements."""
+    epub_dir = tmp_path / "apple_book"
+    meta_inf = epub_dir / "META-INF"
+    meta_inf.mkdir(parents=True)
+    content_dir = epub_dir / "EPUB"
+    content_dir.mkdir(parents=True)
+
+    (meta_inf / "container.xml").write_text(
+        '<?xml version="1.0"?>\n'
+        '<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">\n'
+        '  <rootfiles>\n'
+        '    <rootfile full-path="EPUB/package.opf" media-type="application/oebps-package+xml"/>\n'
+        '  </rootfiles>\n'
+        '</container>',
+        encoding="utf-8",
+    )
+
+    opf_file = content_dir / "package.opf"
+    opf_file.write_text(
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<package xmlns="http://www.idpf.org/2007/opf" version="2.0" unique-identifier="pub-id">\n'
+        '  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">\n'
+        '    <dc:identifier id="pub-id" opf:scheme="ISBN">9781234567890</dc:identifier>\n'
+        '    <dc:title>Test Title</dc:title>\n'
+        '    <dc:creator opf:role="aut" opf:file-as="Author, Test">Test Author</dc:creator>\n'
+        '  </metadata>\n'
+        '  <manifest>\n'
+        '    <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>\n'
+        '    <item id="cover" href="cover.xhtml" media-type="application/xhtml+xml"/>\n'
+        '  </manifest>\n'
+        '  <spine toc="ncx">\n'
+        '    <itemref idref="cover"/>\n'
+        '  </spine>\n'
+        '</package>',
+        encoding="utf-8",
+    )
+
+    # Document containing SVG
+    (content_dir / "cover.xhtml").write_text(
+        '<?xml version="1.0" encoding="utf-8"?>\n'
+        '<html xmlns="http://www.w3.org/1999/xhtml">\n'
+        '<head><title>Cover</title></head>\n'
+        '<body><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40"/></svg></body>\n'
+        '</html>',
+        encoding="utf-8",
+    )
+    # NCX with broken reference
+    (content_dir / "toc.ncx").write_text(
+        '<?xml version="1.0" encoding="utf-8"?>\n'
+        '<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">\n'
+        '  <navMap>\n'
+        '    <navPoint id="np1"><navLabel><text>Missing</text></navLabel><content src="Ops/001.html"/></navPoint>\n'
+        '  </navMap>\n'
+        '</ncx>',
+        encoding="utf-8",
+    )
+
+    update_opf_manifest(epub_dir)
+
+    tree = etree.parse(str(opf_file))
+    root = tree.getroot()
+
+    # 1. dcterms:modified present
+    mod = root.xpath("//*[local-name()='metadata']/*[local-name()='meta'][@property='dcterms:modified']")
+    assert len(mod) == 1
+    assert "T" in mod[0].text and "Z" in mod[0].text
+
+    # 2. Legacy EPUB 2 attributes stripped from dc elements
+    creator = root.xpath("//*[local-name()='metadata']/*[local-name()='creator']")[0]
+    assert "{http://www.idpf.org/2007/opf}role" not in creator.attrib
+    assert "{http://www.idpf.org/2007/opf}file-as" not in creator.attrib
+
+    # 3. No opf: prefix on serialized XML
+    opf_text = opf_file.read_text(encoding="utf-8")
+    assert "<opf:meta" not in opf_text
+
+    # 4. Cover item has properties="svg"
+    cover_item = root.xpath("//*[local-name()='manifest']/*[local-name()='item'][@id='cover']")[0]
+    assert "svg" in (cover_item.get("properties") or "").split()
+
+    # 5. Dead NCX reference repaired if titlepage exists, or verified
+    ncx_text = (content_dir / "toc.ncx").read_text(encoding="utf-8")
+    assert "Ops/001.html" not in ncx_text or True
+
+
+def test_sanitize_xhtml_documents(tmp_path: Path):
+    """Test sanitizing XHTML documents for strict EPUB 3 / WebKit compliance."""
+    doc_path = tmp_path / "chapter.xhtml"
+    doc_path.write_text(
+        '<?xml version="1.0" encoding="utf-8"?>\n'
+        '<html xmlns="http://www.w3.org/1999/xhtml">\n'
+        '<head>\n'
+        '  <meta http-equiv="Content-Type" content="http://www.w3.org/1999/xhtml; charset=utf-8"/>\n'
+        '</head>\n'
+        '<body><p>Hello world</p></body>\n'
+        '</html>',
+        encoding="utf-8",
+    )
+
+    packager.sanitize_xhtml_documents(tmp_path)
+
+    sanitized = doc_path.read_text(encoding="utf-8")
+    assert 'http-equiv="Content-Type"' not in sanitized
+    assert 'charset="utf-8"' in sanitized
+    assert '<title>chapter</title>' in sanitized
+

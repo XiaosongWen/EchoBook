@@ -161,21 +161,34 @@ Generates valid SMIL 3.0 XML documents linking text IDs to audio timestamps:
 </smil>
 ```
 
-#### 3. OPF Package Manifest Updates (`opf.py`)
+#### 3. XHTML Document Sanitization (`sanitize_xhtml_documents`)
+* Enforces strict EPUB 3 / WebKit / Apple Books encoding rules across all content documents:
+  * Removes obsolete, malformed `<meta http-equiv="Content-Type">` elements that cause parser rejection in strict reading systems.
+  * Enforces exactly one `<meta charset="utf-8"/>` per document `<head>`.
+  * Synthesizes missing `<title>` elements to ensure 100% EPUBCheck conformance.
+
+#### 4. OPF Package Manifest Updates (`update_opf_manifest`)
 * Automatically upgrades EPUB 2 `package.opf` to EPUB 3.0 if necessary.
 * In `<metadata>`:
+  * Injects mandatory EPUB 3 modification timestamp: `<meta property="dcterms:modified">YYYY-MM-DDTHH:MM:SSZ</meta>`.
   * Adds global playback duration: `<meta property="media:duration">01:24:30.000</meta>`.
   * Adds per-SMIL duration: `<meta property="media:duration" refines="#smil_chapter01">00:15:20.000</meta>`.
   * Injects active CSS class: `<meta property="media:active-class">-epub-media-overlay-active</meta>`.
+  * Strips legacy EPUB 2 attributes (`opf:role`, `opf:file-as`, `opf:scheme`) from Dublin Core elements.
+  * Sanitizes package namespaces, ensuring all metadata elements belong to the default OPF namespace without invalid `<opf:meta>` prefixes.
 * In `<manifest>`:
   * Links XHTML items to overlays: `media-overlay="smil_chapter01"`.
   * Registers SMIL items with `media-type="application/smil+xml"`.
-  * Registers audio tracks with proper MIME types (`audio/mpeg`, `audio/mp4`).
+  * Registers audio tracks with proper MIME types (`audio/mpeg`, `audio/mp4`), ensuring references remain within the container boundary.
+  * Auto-detects inline `<svg>` elements in content documents and adds `properties="svg"` to the manifest entry.
+* In navigation & TOC (`nav.xhtml` & `toc.ncx`):
+  * Synthesizes EPUB 3 Navigation Document (`nav.xhtml`) with `properties="nav"`.
+  * Validates and repairs NCX (`toc.ncx`) entries referencing missing or moved resources (e.g. Calibre cover page redirects).
 
-#### 4. Container Packaging & Compression (`zip_epub_container`, `validate_epub`)
-* First entry in zip archive is stored with `ZIP_STORED` (uncompressed) at offset 0: `mimetype` containing `application/epub+zip`.
-* All subsequent entries compressed using `ZIP_DEFLATED`.
-* Validates output with EPUBCheck if installed on the host.
+#### 5. Container Packaging & Compression (`zip_epub`, `validate_epubcheck`)
+* First entry in zip archive is stored with `ZIP_STORED` (uncompressed) at offset 0: `mimetype` containing `application/epub+zip` without extra header fields.
+* Audio tracks are stored uncompressed (`ZIP_STORED`) for maximum streaming performance, while text/XML assets are compressed using `ZIP_DEFLATED`.
+* Validates final archive against EPUBCheck (via CLI binary or Java runtime), targeting 0 errors and 0 warnings.
 
 ---
 

@@ -143,3 +143,18 @@ The EchoPage CLI includes the `inject-spans` subcommand for direct terminal exec
 # Inject span IDs into an unpacked EPUB directory
 echopage inject-spans ./my_books/.unpacked ./my_books/alignment.json
 ```
+
+---
+
+## Document Sanitization & Strict EPUB 3 Compliance
+
+Beyond span ID injection, modern strict reading systems (such as **Apple Books** on iOS and macOS, and EPUBCheck validators) enforce strict XML serialization and HTML5 encoding rules. `echopage.packager` runs an automated document sanitization pass (`sanitize_xhtml_documents`) across all content files:
+
+1. **Encoding Declaration Normalization**:
+   - Removes legacy or invalid `<meta http-equiv="Content-Type" content="...">` declarations (e.g. artifacts from Word processors declaring `content="http://www.w3.org/1999/xhtml; charset=utf-8"`).
+   - Enforces the modern, standard `<meta charset="utf-8"/>` in each document `<head>`.
+2. **Title Synthesizing**:
+   - Ensures each document contains a non-empty `<title>` element in `<head>`, defaulting to the chapter filename or title.
+3. **XML Well-Formedness**:
+   - Every file is serialized as strict, well-formed XML with standard XML declarations, ensuring WebKit's strict XML parser loads the documents without formatting or corruption errors.
+

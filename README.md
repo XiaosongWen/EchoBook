@@ -151,8 +151,22 @@ Full-length audiobooks (10–30+ hours) are processed chapter-by-chapter rather 
 
 1. **Audio & Spine Item Mismatch**: EPUB spines often contain non-narrated front matter (cover, copyright, table of contents). EchoPage automatically skips chapters with 0 sentences and allows manual omission via `--skip-spine <id>`.
 2. **Missing Audio Chapter Markers**: Single-file audiobooks without chapter markers are aligned as a single unit or matched to the primary chapter.
-3. **EPUB 2 Upgrades**: Legacy EPUB 2 documents (`version="2.0"`) are automatically upgraded to EPUB 3 (`version="3.0"`), synthesizing an EPUB 3 navigation document (`nav.xhtml`) while preserving existing NCX tables of contents.
+3. **EPUB 2 Upgrades & Strict Reader Compliance**: Legacy EPUB 2 documents (`version="2.0"`) are automatically upgraded to EPUB 3 (`version="3.0"`), synthesizing an EPUB 3 navigation document (`nav.xhtml`) while preserving existing NCX tables of contents. In addition, EchoPage injects mandatory `dcterms:modified` timestamps, sanitizes invalid XHTML encoding declarations, strips obsolete EPUB 2 OPF attributes, heals broken TOC links, and auto-declares SVG assets to ensure 100% compliance with strict reading systems like **Apple Books**.
 4. **Hardware Acceleration Fallbacks**: If `--device mps` is requested, EchoPage warns and seamlessly falls back to CPU, avoiding CTranslate2 unsupported device crashes.
+
+---
+
+## Reader Compatibility & Reading Systems
+
+EchoPage outputs fully compliant EPUB 3 files with Media Overlays. Playback and synchronization behavior across different reading apps:
+
+- **Desktop (Windows / macOS / Linux)**:
+  - **[Thorium Reader](https://edrlab.org/software/thorium-reader/)** *(Recommended)*: The reference reader for EPUB 3 Media Overlays. Natively supports synchronized audio narration with dynamic sentence/word highlighting in reflowable books.
+- **Apple Ecosystem (macOS / iOS / iPadOS)**:
+  - **Apple Books**: Fully supported for text reading, layout rendering, and typography without format or parsing errors. *(Note: Apple Books native audio player UI officially focuses on Fixed-Layout EPUBs; for synchronized audio playback and active highlighting on iPhone and iPad, use a dedicated EPUB 3 Media Overlays player).*
+  - **iOS / iPadOS Dedicated Players**: Apps such as **BookFusion**, **EPUB Player**, and **Menestrello** support full Media Overlays playback with synchronized highlighting on mobile devices.
+- **Android**:
+  - Apps including **BookFusion** and **Colibrio Reader** support synchronized Media Overlays playback.
 
 ---
 

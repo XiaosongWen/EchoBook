@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import datetime
 import logging
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import tempfile
@@ -581,6 +583,60 @@ def inject_spans_into_xhtml(
         log.info("Wrote modified XHTML with %d span IDs to '%s'", len(used_ids), dest_path)
 
     return doc
+
+
+def sanitize_xhtml_documents(work_dir: Union[str, Path]) -> None:
+    """Normalize and sanitize all HTML/XHTML files in work_dir for strict EPUB 3 compliance.
+
+    - Removes invalid `<meta http-equiv="Content-Type">` encoding declarations.
+    - Ensures exactly one `<meta charset="utf-8"/>` per document head.
+    - Ensures a `<title>` tag exists in `<head>`.
+    """
+    work_dir = Path(work_dir)
+    for root, _, files in os.walk(work_dir):
+        for f in sorted(files):
+            if f.endswith((".html", ".xhtml")):
+                p = Path(root) / f
+                try:
+                    content = p.read_text(encoding="utf-8", errors="replace")
+                    parser = etree.XMLParser(remove_blank_text=False)
+                    tree = etree.fromstring(content.encode("utf-8"), parser)
+                    heads = tree.xpath("//*[local-name()='head']")
+                    if heads:
+                        head = heads[0]
+                        modified = False
+                        # Remove all http-equiv content-type meta elements
+                        for m in list(head):
+                            if m.get("http-equiv", "").lower() == "content-type":
+                                head.remove(m)
+                                modified = True
+                        # Ensure exactly one meta charset="utf-8"
+                        charsets = head.xpath("./*[local-name()='meta'][@charset]")
+                        if not charsets:
+                            ns = tree.nsmap.get(None, XHTML_NAMESPACE)
+                            m_char = etree.Element(f"{{{ns}}}meta", attrib={"charset": "utf-8"})
+                            head.insert(0, m_char)
+                            modified = True
+                        elif len(charsets) > 1:
+                            for c in charsets[1:]:
+                                head.remove(c)
+                            modified = True
+                        # Ensure title exists
+                        titles = head.xpath("./*[local-name()='title']")
+                        if not titles or not (titles[0].text or "").strip():
+                            ns = tree.nsmap.get(None, XHTML_NAMESPACE)
+                            if not titles:
+                                t_elem = etree.Element(f"{{{ns}}}title")
+                                t_elem.text = p.stem
+                                head.append(t_elem)
+                            else:
+                                titles[0].text = p.stem
+                            modified = True
+
+                        if modified:
+                            p.write_bytes(etree.tostring(tree, encoding="utf-8", xml_declaration=True))
+                except Exception as exc:
+                    log.warning("Could not sanitize XHTML file %s: %s", p.name, exc)
 
 
 def find_chapter_xhtml_path(
@@ -1313,6 +1369,19 @@ def update_opf_manifest(
         raise OpfUpdateError(f"OPF missing <metadata> element in {opf_path}")
     metadata = metadata_elems[0]
 
+    # Ensure EPUB 3 compliance: remove legacy EPUB 2 opf: attributes from dc elements
+    for elem in metadata.iter():
+        for attr in list(elem.attrib.keys()):
+            if any(attr.endswith(x) for x in ("role", "file-as", "scheme")):
+                del elem.attrib[attr]
+
+    # Ensure dcterms:modified timestamp
+    now_utc = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    for m in metadata.xpath("./*[local-name()='meta'][@property='dcterms:modified']"):
+        metadata.remove(m)
+    mod_meta = etree.SubElement(metadata, qname("meta"), attrib={"property": "dcterms:modified"})
+    mod_meta.text = now_utc
+
     manifest_elems = root.xpath("//*[local-name()='manifest']")
     if not manifest_elems:
         raise OpfUpdateError(f"OPF missing <manifest> element in {opf_path}")
@@ -1508,9 +1577,22 @@ def update_opf_manifest(
             resolved = af
         if resolved in seen_audio_paths:
             continue
-        seen_audio_paths.add(resolved)
 
-        audio_rel_href = os.path.relpath(af, opf_dir).replace("\\", "/")
+        # Ensure audio file is within the EPUB container
+        try:
+            resolved.relative_to(work_dir.resolve())
+            target_af = resolved
+        except ValueError:
+            # af is outside container, check if copied into work_dir/audio
+            for candidate in [opf_dir / "audio" / af.name, work_dir / "audio" / af.name]:
+                if candidate.is_file():
+                    target_af = candidate.resolve()
+                    break
+            else:
+                continue
+
+        seen_audio_paths.add(target_af)
+        audio_rel_href = os.path.relpath(target_af, opf_dir).replace("\\", "/")
         mime = AUDIO_MIME_TYPES.get(af.suffix.lower(), "audio/mpeg")
 
         if audio_rel_href in existing_hrefs:
@@ -1575,6 +1657,37 @@ def update_opf_manifest(
     # 8. Inject active CSS styling into book stylesheets
     inject_active_class_css(work_dir, css_class=active_class, color=highlight_color)
 
+    # 8.5 Ensure SVG property is declared for items containing SVG
+    for it in manifest.xpath("./*[local-name()='item']"):
+        href = it.get("href", "")
+        if href.endswith((".xhtml", ".html")):
+            target = opf_dir / href
+            if target.is_file() and b"<svg" in target.read_bytes().lower():
+                props = (it.get("properties") or "").split()
+                if "svg" not in props:
+                    props.append("svg")
+                    it.set("properties", " ".join(props))
+
+    # 8.6 Repair dead references in NCX if present
+    for ncx_it in manifest.xpath("./*[local-name()='item'][@media-type='application/x-dtbncx+xml']"):
+        ncx_href = ncx_it.get("href")
+        if ncx_href:
+            ncx_file = opf_dir / ncx_href
+            if ncx_file.is_file():
+                ncx_text = ncx_file.read_text(encoding="utf-8", errors="replace")
+                ncx_modified = False
+                for match in re.findall(r'src=["\']([^"\']+)["\']', ncx_text):
+                    clean_src = match.split("#")[0]
+                    if clean_src and not (opf_dir / clean_src).exists():
+                        tp = opf_dir / "titlepage.xhtml"
+                        replacement = "titlepage.xhtml" if tp.exists() else None
+                        if replacement:
+                            log.warning("Repairing dead NCX link %s -> %s", clean_src, replacement)
+                            ncx_text = ncx_text.replace(f'src="{match}"', f'src="{replacement}"')
+                            ncx_modified = True
+                if ncx_modified:
+                    ncx_file.write_text(ncx_text, encoding="utf-8")
+
     # 9. Verify manifest hrefs exist
     if validate_hrefs:
         for it in manifest.xpath("./*[local-name()='item']"):
@@ -1584,8 +1697,11 @@ def update_opf_manifest(
                 if not target.exists():
                     log.warning("Manifest item '%s' href '%s' not found on disk at %s", it.get("id"), href, target)
 
-    # 10. Write updated package document
-    tree.write(str(opf_path), encoding="utf-8", xml_declaration=True, pretty_print=True)
+    # 10. Write updated package document with clean namespaces (no opf: prefixes)
+    raw_xml = etree.tostring(tree, encoding="utf-8", xml_declaration=True, pretty_print=True).decode("utf-8")
+    raw_xml = re.sub(r'<(/?)opf:([a-zA-Z0-9_\-]+)', r'<\1\2', raw_xml)
+    raw_xml = re.sub(r'\sxmlns:opf=["\'][^"\']+["\']', '', raw_xml)
+    opf_path.write_text(raw_xml, encoding="utf-8")
     return opf_path
 
 
@@ -1621,7 +1737,7 @@ def validate_epubcheck(
 
     try:
         proc = subprocess.run(
-            [bin_path, str(epub_path)],
+            shlex.split(bin_path) + [str(epub_path)],
             capture_output=True,
             text=True,
             check=False,
@@ -1771,6 +1887,10 @@ def package(
         t0 = time.perf_counter()
         smil_results = generate_smil_playlists(target, alignment, audio_source=audio, continuous=continuous)
         log.info("Generated SMIL 3.0 playlists and copied audio (took %s)", format_duration(time.perf_counter() - t0))
+
+        t0 = time.perf_counter()
+        sanitize_xhtml_documents(target)
+        log.info("Sanitized XHTML documents (charset and title) (took %s)", format_duration(time.perf_counter() - t0))
 
         t0 = time.perf_counter()
         update_opf_manifest(target, smil_metadata=smil_results, audio_files=audio)
