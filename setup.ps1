@@ -1,11 +1,11 @@
 # ==============================================================================
-# EchoPage Environment & Dependency Setup Script for Windows PowerShell
+# EchoBook Environment & Dependency Setup Script for Windows PowerShell
 # ==============================================================================
 
 $ErrorActionPreference = "Stop"
 
 Write-Host "`n=====================================================" -ForegroundColor Cyan
-Write-Host "       EchoPage Automated Environment Setup (Windows) " -ForegroundColor Cyan
+Write-Host "       EchoBook Automated Environment Setup (Windows) " -ForegroundColor Cyan
 Write-Host "=====================================================`n" -ForegroundColor Cyan
 
 # 1. Check Python
@@ -39,7 +39,7 @@ if (-not $hasFfmpeg -or -not $hasFfprobe) {
     Write-Host "[SUCCESS] FFmpeg and ffprobe are ready." -ForegroundColor Green
 }
 
-# 3. Check for uv (EchoPage strictly uses uv, not pip)
+# 3. Check for uv (EchoBook strictly uses uv, not pip)
 Write-Host "[INFO] Checking for uv package manager..." -ForegroundColor Cyan
 $hasUv = (Get-Command uv -ErrorAction SilentlyContinue) -ne $null
 if (-not $hasUv) {
@@ -54,7 +54,7 @@ if (-not $hasUv) {
 }
 
 if (-not $hasUv) {
-    Write-Error "uv is required for EchoPage. Please install uv manually: https://docs.astral.sh/uv/getting-started/installation/ or run 'winget install astral-sh.uv'"
+    Write-Error "uv is required for EchoBook. Please install uv manually: https://docs.astral.sh/uv/getting-started/installation/ or run 'winget install astral-sh.uv'"
     exit 1
 }
 Write-Host "[SUCCESS] Found uv: $(uv --version)" -ForegroundColor Green
@@ -90,8 +90,8 @@ if ($hasNvidia) {
     uv pip install --python $venvPython torch torchvision torchaudio
 }
 
-# 6. Install EchoPage and dependencies via uv
-Write-Host "[INFO] Installing EchoPage and alignment dependencies via uv..." -ForegroundColor Cyan
+# 6. Install EchoBook and dependencies via uv
+Write-Host "[INFO] Installing EchoBook and alignment dependencies via uv..." -ForegroundColor Cyan
 uv pip install --python $venvPython -e ".[align,dev]"
 
 # 7. Pre-cache NLTK models
@@ -111,9 +111,9 @@ except Exception:
 # 9. Smoke test
 Write-Host "[INFO] Verifying installation..." -ForegroundColor Cyan
 & $venvPython -c "
-import echopage
+import echobook
 import whisperx
-print(f'EchoPage version: {echopage.__version__}')
+print(f'EchoBook version: {echobook.__version__}')
 "
 
 Write-Host "`n=====================================================" -ForegroundColor Green
@@ -122,4 +122,4 @@ Write-Host "=====================================================`n" -Foreground
 Write-Host "To activate your virtual environment in PowerShell:"
 Write-Host "  .\.venv\Scripts\Activate.ps1`n" -ForegroundColor Cyan
 Write-Host "To build a narrated EPUB:"
-Write-Host "  echopage build --epub <path-to-epub> --audio <path-to-audio> --output <path-to-output>`n" -ForegroundColor Cyan
+Write-Host "  echobook build --epub <path-to-epub> --audio <path-to-audio> --output <path-to-output>`n" -ForegroundColor Cyan

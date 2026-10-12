@@ -1,6 +1,6 @@
 # Test Fixtures
 
-This directory contains lightweight, public-domain test fixtures used across the EchoPage test suite.
+This directory contains lightweight, public-domain test fixtures used across the EchoBook test suite.
 
 ## Provenance & Licensing
 
@@ -18,7 +18,7 @@ All fixture assets in this directory are free of copyright restrictions and free
 ## Fixture Inventory
 
 ### 1. EPUB Fixtures
-- [`book.epub`](file:///Users/tomaswen/workspace/EchoPage/tests/fixtures/book.epub) / [`sample.epub`](file:///Users/tomaswen/workspace/EchoPage/tests/fixtures/sample.epub)
+- [`book.epub`](book.epub) / [`sample.epub`](sample.epub)
   - Compliant EPUB 3 document structure.
   - Contains uncompressed `mimetype` (`application/epub+zip`) as the first entry in the zip archive.
   - Manifest and spine in `EPUB/package.opf` defining reading order:
@@ -28,26 +28,26 @@ All fixture assets in this directory are free of copyright restrictions and free
   - Content includes inline styling elements (`<em>`), dialogue quotes, and abbreviations (`Mr. Fox`) to exercise sentence tokenizers.
 
 ### 2. Audio Fixtures
-- [`book.m4b`](file:///Users/tomaswen/workspace/EchoPage/tests/fixtures/book.m4b)
+- [`book.m4b`](book.m4b)
   - QuickTime / MP4 container (`.m4b`), AAC codec (22,050 Hz, mono).
   - Total duration: ~45.23 seconds.
   - Embedded metadata chapters:
     - **Chapter 1**: `0.000s` – `23.833s` ("Chapter 1: The Tortoise and the Hare")
     - **Chapter 2**: `23.833s` – `45.159s` ("Chapter 2: The North Wind and the Sun")
-- [`book.mp3`](file:///Users/tomaswen/workspace/EchoPage/tests/fixtures/book.mp3)
+- [`book.mp3`](book.mp3)
   - MP3 container, MP3 audio codec (`libmp3lame`, 22,050 Hz, mono).
   - Total duration: ~45.23 seconds.
-- [`ch01.mp3`](file:///Users/tomaswen/workspace/EchoPage/tests/fixtures/ch01.mp3) / [`chapter01.mp3`](file:///Users/tomaswen/workspace/EchoPage/tests/fixtures/chapter01.mp3)
+- [`ch01.mp3`](ch01.mp3) / [`chapter01.mp3`](chapter01.mp3)
   - Chapter 1 standalone audio (~23.83 seconds).
-- [`ch02.mp3`](file:///Users/tomaswen/workspace/EchoPage/tests/fixtures/ch02.mp3) / [`chapter02.mp3`](file:///Users/tomaswen/workspace/EchoPage/tests/fixtures/chapter02.mp3)
+- [`ch02.mp3`](ch02.mp3) / [`chapter02.mp3`](chapter02.mp3)
   - Chapter 2 standalone audio (~21.33 seconds).
-- [`sample.aax`](file:///Users/tomaswen/workspace/EchoPage/tests/fixtures/sample.aax)
+- [`sample.aax`](sample.aax)
   - Synthetic Audible AAX container format with `aax ` major brand in the `ftyp` box.
   - Used for testing DRM format detection and AAX command construction without proprietary content.
-- [`sample.aaxc`](file:///Users/tomaswen/workspace/EchoPage/tests/fixtures/sample.aaxc)
+- [`sample.aaxc`](sample.aaxc)
   - Synthetic Audible AAXC container format with `aaxc` major brand in the `ftyp` box.
   - Used for testing DRM format detection and AAXC command construction.
-- [`sample_16k.wav`](file:///Users/tomaswen/workspace/EchoPage/tests/fixtures/sample_16k.wav)
+- [`sample_16k.wav`](sample_16k.wav)
   - Uncompressed PCM WAV (`pcm_s16le`, 16,000 Hz, mono, 16-bit).
   - Ideal input format for WhisperX forced alignment.
 

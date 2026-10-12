@@ -1,18 +1,18 @@
 # 19 - Hardware-Aware Parallel Alignment & Concurrency Auto-Detection
 
 ## Background
-Currently, EchoPage processes chapter alignment strictly sequentially in `aligner.py` using a single-threaded loop over `mapped_pairs`. 
+Currently, EchoBook processes chapter alignment strictly sequentially in `aligner.py` using a single-threaded loop over `mapped_pairs`. 
 
 While sequential execution with internal batching (`batch_size=16`) is optimal for mid-tier GPUs like the RTX 3070 (8GB VRAM) running `large-v3`, users running on high-end hardware (e.g. 24GB RTX 3090/4090, 48GB RTX A6000, 80GB A100/H100, or multi-GPU workstations) have substantial idle compute and memory. On these machines, processing 2 to 8+ chapters concurrently could dramatically reduce overall build time from several hours down to tens of minutes.
 
-However, concurrently loading multiple instances of large neural models can easily trigger catastrophic Out-Of-Memory (`CUDA OOM`) crashes if concurrency is improperly configured. EchoPage needs an intelligent, hardware-aware concurrency manager that allows explicit user control (`--workers N`) while providing safe, automatic VRAM-based detection (`--workers auto`).
+However, concurrently loading multiple instances of large neural models can easily trigger catastrophic Out-Of-Memory (`CUDA OOM`) crashes if concurrency is improperly configured. EchoBook needs an intelligent, hardware-aware concurrency manager that allows explicit user control (`--workers N`) while providing safe, automatic VRAM-based detection (`--workers auto`).
 
 ---
 
 ## What to do
 
 1. **CLI Parameter `--workers` / `--concurrency`:**
-   - Add `--workers` (alias `--concurrency`) argument to `echopage build` and `echopage align`:
+   - Add `--workers` (alias `--concurrency`) argument to `echobook build` and `echobook align`:
      - Default value: `auto`.
      - Explicit integer value: e.g. `--workers 1`, `--workers 2`, `--workers 4`.
 
@@ -43,7 +43,7 @@ However, concurrently loading multiple instances of large neural models can easi
 ---
 
 ## Acceptance Criteria
-- [ ] **CLI Support:** `--workers` / `--concurrency` flag added to `echopage build` and `echopage align` (default: `auto`).
+- [ ] **CLI Support:** `--workers` / `--concurrency` flag added to `echobook build` and `echobook align` (default: `auto`).
 - [ ] **Hardware Auto-Detection:** `--workers auto` accurately detects GPU VRAM and chooses safe concurrency:
   - Selects `workers=1` on 8GB GPU with `large-v3` (preventing OOM).
   - Selects `workers=3` on 24GB GPU with `large-v3`.

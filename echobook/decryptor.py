@@ -1,4 +1,4 @@
-"""Audio format detection and DRM decryption module for EchoPage."""
+"""Audio format detection and DRM decryption module for EchoBook."""
 
 from __future__ import annotations
 
@@ -11,9 +11,9 @@ import time
 from pathlib import Path
 from typing import Sequence, Union
 
-from echopage.logger import format_duration
+from echobook.logger import format_duration
 
-log = logging.getLogger("echopage.decryptor")
+log = logging.getLogger("echobook.decryptor")
 
 
 class AudioFormat(str):

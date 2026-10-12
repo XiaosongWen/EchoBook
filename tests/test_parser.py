@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 from lxml import etree
 
-from echopage.parser import (
+from echobook.parser import (
     EpubError,
     EpubSecurityError,
     PackageItem,

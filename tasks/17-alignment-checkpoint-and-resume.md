@@ -3,7 +3,7 @@
 ## Background
 Full-length audiobooks often span 10 to 30+ hours (such as *Horus Rising*, which is over 12 hours long across 25 chapters). Transcribing and force-aligning such books with WhisperX takes 1 to 3+ hours even on modern GPUs.
 
-Currently, if an execution is interrupted halfway through (e.g. system sleep, manual `Ctrl+C`, network disconnection in SSH, terminal closure, or CUDA Out-Of-Memory on long chapters), the entire alignment loop in `aligner.py` is aborted. Re-running `echopage build` currently restarts alignment from chapter 1, discarding all previously computed GPU work.
+Currently, if an execution is interrupted halfway through (e.g. system sleep, manual `Ctrl+C`, network disconnection in SSH, terminal closure, or CUDA Out-Of-Memory on long chapters), the entire alignment loop in `aligner.py` is aborted. Re-running `echobook build` currently restarts alignment from chapter 1, discarding all previously computed GPU work.
 
 A resilient per-chapter checkpointing and resume mechanism is critical for production reliability and developer experience.
 
@@ -18,11 +18,11 @@ A resilient per-chapter checkpointing and resume mechanism is critical for produ
    - Use atomic write operations (write to `.tmp` file and rename) to guarantee checkpoint files are never corrupted by unexpected terminations.
 
 2. **Resume Detection on Build Start:**
-   - When `echopage build` (or `echopage align`) is invoked with an existing `work_dir`:
+   - When `echobook build` (or `echobook align`) is invoked with an existing `work_dir`:
      - Inspect the checkpoint directory for previously aligned chapters matching the current EPUB spine / audio pairs.
      - Validate checkpoint integrity and compatibility (check that model size, language, and chapter IDs match).
      - Log a clear resume banner:
-       `[INFO ] [echopage.aligner] Resuming from checkpoint in '.echopage_cache': 8/25 chapters already completed. Resuming at chapter 9/25 ('id014')...`
+       `[INFO ] [echobook.aligner] Resuming from checkpoint in '.echobook_build_<stem>': 8/25 chapters already completed. Resuming at chapter 9/25 ('id014')...`
      - Skip redundant audio downsampling, Whisper transcription, and wav2vec2 alignment for finished chapters.
 
 3. **Force Override Flag (`--force`):**
@@ -37,7 +37,7 @@ A resilient per-chapter checkpointing and resume mechanism is critical for produ
 
 ## Acceptance Criteria
 - [ ] **Atomic Per-Chapter Saves:** Each chapter's `AlignedChapter` result is flushed to disk immediately upon completion.
-- [ ] **Seamless Resume:** Killing a build halfway through (e.g., at chapter 5/25) and re-running `echopage build` with the same `work_dir` skips chapters 1-4 and resumes directly at chapter 5.
+- [ ] **Seamless Resume:** Killing a build halfway through (e.g., at chapter 5/25) and re-running `echobook build` with the same `work_dir` skips chapters 1-4 and resumes directly at chapter 5.
 - [ ] **Final Output Parity:** A resumed run produces byte-equivalent or timeline-equivalent `alignment.json` and EPUB Media Overlays compared to an uninterrupted full run.
 - [ ] **Bypass with `--force`:** Supplying `--force` ignores existing checkpoints and recomputes all chapters from chapter 1.
 - [ ] **Clean Diagnostics:** Console logs clearly inform the user how many chapters were restored from checkpoint and which chapter is being resumed.

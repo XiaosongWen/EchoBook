@@ -1,4 +1,4 @@
-"""Alignment data contract, validation, and serialization module for EchoPage."""
+"""Alignment data contract, validation, and serialization module for EchoBook."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Iterator, Sequence, TextIO, Union
 
-log = logging.getLogger("echopage.alignment")
+log = logging.getLogger("echobook.alignment")
 
 
 class AlignmentError(RuntimeError):
@@ -52,7 +52,7 @@ def format_element_id(index: int, prefix: str = DEFAULT_ID_PREFIX, pad: int = DE
 
 
 def is_valid_element_id(element_id: str) -> bool:
-    """Return True if element_id matches the standard EchoPage ID scheme ('mo_s_NNNN')."""
+    """Return True if element_id matches the standard EchoBook ID scheme ('mo_s_NNNN')."""
     if not isinstance(element_id, str):
         return False
     return bool(ELEMENT_ID_REGEX.match(element_id))
@@ -277,7 +277,7 @@ class AlignedChapter:
 
 ALIGNMENT_SCHEMA: dict[str, Any] = {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "EchoPage Alignment Format",
+    "title": "EchoBook Alignment Format",
     "description": "Schema for alignment.json contract between aligner and packager",
     "type": "array",
     "items": {

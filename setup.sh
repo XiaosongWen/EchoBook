@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# EchoPage Environment & Dependency Setup Script
+# EchoBook Environment & Dependency Setup Script
 # Works on: Linux (Ubuntu/Debian, Fedora, Arch), WSL2, and macOS.
 # ==============================================================================
 
@@ -31,7 +31,7 @@ log_error() {
 }
 
 echo -e "\n${BOLD}=====================================================${RESET}"
-echo -e "${BOLD}       EchoPage Automated Environment Setup         ${RESET}"
+echo -e "${BOLD}       EchoBook Automated Environment Setup         ${RESET}"
 echo -e "${BOLD}=====================================================${RESET}\n"
 
 # 1. Detect Python 3.10+
@@ -88,7 +88,7 @@ else
     log_warn "FFmpeg could not be automatically installed. Audio conversion features may fail until FFmpeg is installed."
 fi
 
-# 3. Check / Install uv (EchoPage strictly uses uv, not pip)
+# 3. Check / Install uv (EchoBook strictly uses uv, not pip)
 log_info "Checking for uv package manager..."
 if ! command -v uv >/dev/null 2>&1; then
     log_warn "uv is not found on PATH. Attempting automatic installation..."
@@ -102,7 +102,7 @@ if ! command -v uv >/dev/null 2>&1; then
 fi
 
 if ! command -v uv >/dev/null 2>&1; then
-    log_error "uv is required for EchoPage environment setup but was not found."
+    log_error "uv is required for EchoBook environment setup but was not found."
     log_info "Please install uv manually: https://docs.astral.sh/uv/getting-started/installation/"
     exit 1
 fi
@@ -144,8 +144,8 @@ else
     uv pip install --python "$VENV_PYTHON" torch torchvision torchaudio
 fi
 
-# 6. Install EchoPage and dependencies via uv
-log_info "Installing EchoPage and alignment dependencies (WhisperX, lxml, nltk) via uv..."
+# 6. Install EchoBook and dependencies via uv
+log_info "Installing EchoBook and alignment dependencies (WhisperX, lxml, nltk) via uv..."
 uv pip install --python "$VENV_PYTHON" -e ".[align,dev]"
 
 # 7. Pre-cache NLTK Tokenizer Models
@@ -165,9 +165,9 @@ except Exception:
 # 9. Smoke test
 log_info "Verifying installation..."
 "$VENV_PYTHON" -c "
-import echopage
+import echobook
 import whisperx
-print(f'EchoPage version: {echopage.__version__}')
+print(f'EchoBook version: {echobook.__version__}')
 "
 
 echo -e "\n${BOLD}=====================================================${RESET}"
@@ -176,4 +176,4 @@ echo -e "${BOLD}=====================================================${RESET}\n"
 echo -e "To activate your virtual environment:"
 echo -e "  ${CYAN}source .venv/bin/activate${RESET}\n"
 echo -e "To build a narrated EPUB:"
-echo -e "  ${CYAN}echopage build --epub <path-to-epub> --audio <path-to-audio> --output <path-to-output>${RESET}\n"
+echo -e "  ${CYAN}echobook build --epub <path-to-epub> --audio <path-to-audio> --output <path-to-output>${RESET}\n"

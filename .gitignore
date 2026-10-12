@@ -26,6 +26,7 @@ review-tasks-done.md
 
 # Temporary extraction & parts
 .echopage_*/
+.echobook_*/
 .build_*/
 *_parts/
 *.log

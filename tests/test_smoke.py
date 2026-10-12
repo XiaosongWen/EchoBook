@@ -1,2 +1,2 @@
 def test_import():
-    import echopage.cli  # noqa: F401
+    import echobook.cli  # noqa: F401

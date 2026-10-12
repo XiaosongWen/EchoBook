@@ -1,6 +1,6 @@
-# EchoPage
+# EchoBook
 
-EchoPage transforms standard EPUB eBooks and audiobooks into fully synchronized EPUB 3 Media Overlays with word- or sentence-level audio highlighting.
+EchoBook transforms standard EPUB eBooks and audiobooks into fully synchronized EPUB 3 Media Overlays with word- or sentence-level audio highlighting.
 
 Compatible with Media Overlays-capable readers including **Thorium Reader**, **Apple Books**, and modern EPUB 3 reading systems.
 
@@ -9,7 +9,7 @@ Compatible with Media Overlays-capable readers including **Thorium Reader**, **A
 ## Prerequisites
 
 - **Python 3.10+**
-- **uv** (fast Python package and environment manager — **EchoPage strictly uses `uv` instead of `pip`**):
+- **uv** (fast Python package and environment manager — **EchoBook strictly uses `uv` instead of `pip`**):
   ```sh
   # macOS / Linux / WSL2
   curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -36,7 +36,7 @@ Compatible with Media Overlays-capable readers including **Thorium Reader**, **A
 ## Installation
 
 > [!IMPORTANT]
-> **Package Management Standard:** EchoPage standardizes entirely on [`uv`](https://docs.astral.sh/uv/). All virtual environment creation and dependency installations are managed with `uv` (`uv venv`, `uv pip install`). Do **not** use `pip`.
+> **Package Management Standard:** EchoBook standardizes entirely on [`uv`](https://docs.astral.sh/uv/). All virtual environment creation and dependency installations are managed with `uv` (`uv venv`, `uv pip install`). Do **not** use `pip`.
 
 ### Quick Automated Setup (Recommended)
 
@@ -55,14 +55,14 @@ Run the automated setup script for your platform. It automatically detects Pytho
 ### Manual Installation
 
 ```sh
-git clone https://github.com/XiaosongWen/EchoPage.git
-cd EchoPage
+git clone https://github.com/XiaosongWen/EchoBook.git
+cd EchoBook
 uv venv
 source .venv/bin/activate
 uv pip install -e ".[align,dev]"
 ```
 
-> **Note:** Always activate the virtual environment (`source .venv/bin/activate` or `.\.venv\Scripts\Activate.ps1`) before running `echopage` or `pytest`.
+> **Note:** Always activate the virtual environment (`source .venv/bin/activate` or `.\.venv\Scripts\Activate.ps1`) before running `echobook` or `pytest`.
 
 ---
 
@@ -70,7 +70,7 @@ uv pip install -e ".[align,dev]"
 
 ### 1. Build a Narrated EPUB
 ```sh
-echopage build \
+echobook build \
   --epub ./sources/book.epub \
   --audio ./sources/book.m4b \
   --output ./dist/book_narrated.epub
@@ -78,7 +78,7 @@ echopage build \
 
 ### 2. Preview Chapter Mapping Without Aligning (`--dry-run`)
 ```sh
-echopage build \
+echobook build \
   --epub ./sources/book.epub \
   --audio ./sources/book.m4b \
   --output ./dist/book_narrated.epub \
@@ -87,7 +87,7 @@ echopage build \
 
 ### 3. Build from Audible AAX with Activation Bytes
 ```sh
-echopage build \
+echobook build \
   --epub ./sources/book.epub \
   --audio ./sources/book.aax \
   --activation-bytes 1a2b3c4d \
@@ -98,14 +98,14 @@ echopage build \
 
 ## CLI Reference
 
-### `echopage build`
+### `echobook build`
 
 | Flag | Description | Default |
 |---|---|---|
 | `--epub PATH` | Path to source input EPUB (EPUB 2 or EPUB 3) | *(required)* |
 | `--audio PATH [PATH...]` | One or more audiobook files (`.m4b`, `.mp3`, `.aax`, `.aaxc`) | *(required)* |
 | `--output PATH` | Path for the synchronized output EPUB | *(required)* |
-| `--work-dir DIR` | Cache directory for intermediate files and resume support | `.echopage_build_<stem>` |
+| `--work-dir DIR` | Cache directory for intermediate files and resume support | `.echobook_build_<stem>` |
 | `--force` | Force re-running alignment even if cached `alignment.json` exists | `False` |
 | `--keep-temp` | Retain scratch 16kHz WAV files after alignment | `False` |
 | `--dry-run` | Inspect EPUB and audio and print planned mapping without aligning | `False` |
@@ -118,12 +118,12 @@ echopage build \
 | `--verbose` | Enable debug logging output | `False` |
 
 ### Utility Subcommands
-- `echopage probe <audio>`: Inspect audio chapters and durations.
-- `echopage split <audio> -o <dir>`: Cut audiobook into chapter segments.
-- `echopage to-wav <audio> <out.wav>`: Convert audio to 16 kHz mono WAV.
-- `echopage decrypt <audio> --activation-bytes <hex>`: Decrypt Audible file.
-- `echopage parse <epub>`: Unpack EPUB and extract chapter sentences.
-- `echopage update-opf <work_dir>`: Update OPF package manifest with overlays.
+- `echobook probe <audio>`: Inspect audio chapters and durations.
+- `echobook split <audio> -o <dir>`: Cut audiobook into chapter segments.
+- `echobook to-wav <audio> <out.wav>`: Convert audio to 16 kHz mono WAV.
+- `echobook decrypt <audio> --activation-bytes <hex>`: Decrypt Audible file.
+- `echobook parse <epub>`: Unpack EPUB and extract chapter sentences.
+- `echobook update-opf <work_dir>`: Update OPF package manifest with overlays.
 
 ---
 
@@ -133,7 +133,7 @@ echopage build \
 Audible AAX files are protected by Audible DRM. To convert titles that you own, obtain your 8-hex-character activation bytes using community utilities such as [audible-cli](https://github.com/mkb79/audible-cli) or [Audible-Activator](https://github.com/inAudible-NG/audible-activator).
 
 ### Legal Notice
-> **Personal Use Only:** EchoPage is intended solely for personal, private format-shifting and accessibility augmentation of legally purchased audiobooks and eBooks that you own. Do not decrypt, reproduce, or distribute copyrighted content in violation of applicable laws or terms of service.
+> **Personal Use Only:** EchoBook is intended solely for personal, private format-shifting and accessibility augmentation of legally purchased audiobooks and eBooks that you own. Do not decrypt, reproduce, or distribute copyrighted content in violation of applicable laws or terms of service.
 
 ---
 
@@ -149,16 +149,16 @@ Full-length audiobooks (10–30+ hours) are processed chapter-by-chapter rather 
 
 ## Edge Cases Handled
 
-1. **Audio & Spine Item Mismatch**: EPUB spines often contain non-narrated front matter (cover, copyright, table of contents). EchoPage automatically skips chapters with 0 sentences and allows manual omission via `--skip-spine <id>`.
+1. **Audio & Spine Item Mismatch**: EPUB spines often contain non-narrated front matter (cover, copyright, table of contents). EchoBook automatically skips chapters with 0 sentences and allows manual omission via `--skip-spine <id>`.
 2. **Missing Audio Chapter Markers**: Single-file audiobooks without chapter markers are aligned as a single unit or matched to the primary chapter.
-3. **EPUB 2 Upgrades & Strict Reader Compliance**: Legacy EPUB 2 documents (`version="2.0"`) are automatically upgraded to EPUB 3 (`version="3.0"`), synthesizing an EPUB 3 navigation document (`nav.xhtml`) while preserving existing NCX tables of contents. In addition, EchoPage injects mandatory `dcterms:modified` timestamps, sanitizes invalid XHTML encoding declarations, strips obsolete EPUB 2 OPF attributes, heals broken TOC links, and auto-declares SVG assets to ensure 100% compliance with strict reading systems like **Apple Books**.
-4. **Hardware Acceleration Fallbacks**: If `--device mps` is requested, EchoPage warns and seamlessly falls back to CPU, avoiding CTranslate2 unsupported device crashes.
+3. **EPUB 2 Upgrades & Strict Reader Compliance**: Legacy EPUB 2 documents (`version="2.0"`) are automatically upgraded to EPUB 3 (`version="3.0"`), synthesizing an EPUB 3 navigation document (`nav.xhtml`) while preserving existing NCX tables of contents. In addition, EchoBook injects mandatory `dcterms:modified` timestamps, sanitizes invalid XHTML encoding declarations, strips obsolete EPUB 2 OPF attributes, heals broken TOC links, and auto-declares SVG assets to ensure 100% compliance with strict reading systems like **Apple Books**.
+4. **Hardware Acceleration Fallbacks**: If `--device mps` is requested, EchoBook warns and seamlessly falls back to CPU, avoiding CTranslate2 unsupported device crashes.
 
 ---
 
 ## Reader Compatibility & Reading Systems
 
-EchoPage outputs fully compliant EPUB 3 files with Media Overlays. Playback and synchronization behavior across different reading apps:
+EchoBook outputs fully compliant EPUB 3 files with Media Overlays. Playback and synchronization behavior across different reading apps:
 
 - **Desktop (Windows / macOS / Linux)**:
   - **[Thorium Reader](https://edrlab.org/software/thorium-reader/)** *(Recommended)*: The reference reader for EPUB 3 Media Overlays. Natively supports synchronized audio narration with dynamic sentence/word highlighting in reflowable books.
@@ -172,7 +172,7 @@ EchoPage outputs fully compliant EPUB 3 files with Media Overlays. Playback and 
 
 ## Troubleshooting
 
-- **`epubcheck: command not found`**: Install EPUBCheck via `brew install epubcheck` or skip EPUBCheck validation. EchoPage still generates a structurally compliant EPUB.
+- **`epubcheck: command not found`**: Install EPUBCheck via `brew install epubcheck` or skip EPUBCheck validation. EchoBook still generates a structurally compliant EPUB.
 - **`device 'mps' is unsupported`**: CTranslate2 (used by WhisperX) does not support Apple Silicon MPS for alignment; CPU is automatically selected and delivers optimal throughput.
 - **Alignment Drifting**: Ensure the audio narration unabridged text matches the eBook edition. Preview with `--dry-run` to verify that chapter counts correspond.
 

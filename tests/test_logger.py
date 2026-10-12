@@ -1,11 +1,12 @@
-"""Unit tests for EchoPage logging and timing framework."""
+"""Unit tests for EchoBook logging and timing framework."""
 
 import logging
 import io
 import time
 import pytest
 
-from echopage.logger import (
+from echobook.logger import (
+    EchoBookFormatter,
     EchoPageFormatter,
     format_duration,
     setup_logging,
@@ -43,10 +44,10 @@ def test_format_duration_hours():
     assert format_duration(7325.0) == "2h 2m 5s"
 
 
-def test_echopage_formatter_plain():
-    formatter = EchoPageFormatter(use_color=False, datefmt="%Y-%m-%d %H:%M:%S")
+def test_echobook_formatter_plain():
+    formatter = EchoBookFormatter(use_color=False, datefmt="%Y-%m-%d %H:%M:%S")
     record = logging.LogRecord(
-        name="echopage.test",
+        name="echobook.test",
         level=logging.INFO,
         pathname=__file__,
         lineno=10,
@@ -56,15 +57,15 @@ def test_echopage_formatter_plain():
     )
     output = formatter.format(record)
     assert "[INFO ]" in output
-    assert "[echopage.test]" in output
+    assert "[echobook.test]" in output
     assert "Test message 123" in output
     assert "\033[" not in output  # No ANSI escapes
 
 
-def test_echopage_formatter_with_color():
-    formatter = EchoPageFormatter(use_color=True, datefmt="%Y-%m-%d %H:%M:%S")
+def test_echobook_formatter_with_color():
+    formatter = EchoBookFormatter(use_color=True, datefmt="%Y-%m-%d %H:%M:%S")
     record = logging.LogRecord(
-        name="echopage.cli",
+        name="echobook.cli",
         level=logging.ERROR,
         pathname=__file__,
         lineno=20,
@@ -78,8 +79,8 @@ def test_echopage_formatter_with_color():
     assert "Error occurred" in output
 
 
-def test_echopage_formatter_exception_traceback():
-    formatter = EchoPageFormatter(use_color=False)
+def test_echobook_formatter_exception_traceback():
+    formatter = EchoBookFormatter(use_color=False)
     try:
         raise ValueError("Sample error")
     except ValueError:
@@ -87,7 +88,7 @@ def test_echopage_formatter_exception_traceback():
         exc_info = sys.exc_info()
 
     record = logging.LogRecord(
-        name="echopage.test",
+        name="echobook.test",
         level=logging.ERROR,
         pathname=__file__,
         lineno=30,

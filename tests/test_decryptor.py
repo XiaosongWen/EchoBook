@@ -6,8 +6,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from echopage import decryptor
-from echopage.decryptor import (
+from echobook import decryptor
+from echobook.decryptor import (
     FORMAT_AAX,
     FORMAT_AAXC,
     FORMAT_M4B,

@@ -1,4 +1,4 @@
-"""Unit and integration tests for the EchoPage Aligner module."""
+"""Unit and integration tests for the EchoBook Aligner module."""
 
 import json
 import logging
@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from echopage.aligner import (
+from echobook.aligner import (
     AlignedChapter,
     AlignmentError,
     AlignmentMismatchError,
@@ -20,8 +20,8 @@ from echopage.aligner import (
     normalize_word,
     tokenize_words,
 )
-from echopage.audio import AudioUnit
-from echopage.parser import Sentence
+from echobook.audio import AudioUnit
+from echobook.parser import Sentence
 
 
 # ---------------------------------------------------------------------------
@@ -297,7 +297,7 @@ def test_low_confidence_logged(caplog):
         {"word": "This", "start": 0.5, "end": 0.8},  # only 1 out of 8 words matches -> 0.125 confidence
     ]
 
-    with caplog.at_level(logging.WARNING, logger="echopage.aligner"):
+    with caplog.at_level(logging.WARNING, logger="echobook.aligner"):
         timeline = align_sentence_words(sentences, heard_words, audio_duration=2.0, chapter_id="chapter01")
 
     assert len(timeline) == 1
@@ -414,8 +414,8 @@ def test_end_ms_clamped_to_audio_duration():
 
 
 def test_align_skips_chapters_without_sentences():
-    from echopage.aligner import align
-    from echopage.audio import AudioUnit
+    from echobook.aligner import align
+    from echobook.audio import AudioUnit
     book = {"chapters": [
         {"id": "cover", "href": "cover.xhtml", "sentences": []},
         {"id": "c1", "href": "c1.xhtml", "sentences": [
@@ -461,7 +461,7 @@ def test_get_optimal_model_size_cuda(monkeypatch):
 
 
 def test_cli_model_size_defaults_to_auto():
-    from echopage.cli import build_parser
+    from echobook.cli import build_parser
 
     parser = build_parser()
     args = parser.parse_args(["build", "--epub", "b.epub", "--audio", "a.m4b", "--output", "out.epub"])

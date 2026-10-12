@@ -1,4 +1,4 @@
-"""Tests for echopage.audio module."""
+"""Tests for echobook.audio module."""
 
 import json
 import shutil
@@ -8,7 +8,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from echopage.audio import (
+from echobook.audio import (
     AudioError,
     AudioUnit,
     ChapterDict,

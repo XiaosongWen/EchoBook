@@ -3,7 +3,7 @@
 ## Background
 Real-world books rarely have a pristine 1:1 match between EPUB spine items and audiobook chapter cuts. EPUBs almost always contain non-narrated front-matter (e.g. half-title, copyright, table of contents, dramatis personae, epigraph) and back-matter (e.g. timeline, author biography, appendix, advertisements). 
 
-Currently, EchoPage raises an `AlignmentMismatchError` when chapter counts differ, requiring users to manually inspect XHTML files and pass explicit spine IDs via `--skip-spine id002,id004,...` (as seen in *Horus Rising*, which has 30 spine items for 25 audio parts).
+Currently, EchoBook raises an `AlignmentMismatchError` when chapter counts differ, requiring users to manually inspect XHTML files and pass explicit spine IDs via `--skip-spine id002,id004,...` (as seen in *Horus Rising*, which has 30 spine items for 25 audio parts).
 
 An automated mapping mechanism should intelligently align audio tracks to the correct story chapters and auto-skip non-narrated pages.
 
@@ -37,7 +37,7 @@ An automated mapping mechanism should intelligently align audio tracks to the co
      - Detect unmatched audio (e.g. `"Opening Credits"`, `"Closing Credits"`) and map them to appropriate title pages or exclude gracefully.
 
 5. **CLI Integration & Diagnostics (`--auto-map`):**
-   - Add `--auto-map` flag to `echopage build` (enabled by default when chapter count mismatch occurs, or as an explicit opt-in flag).
+   - Add `--auto-map` flag to `echobook build` (enabled by default when chapter count mismatch occurs, or as an explicit opt-in flag).
    - In `--dry-run`, clearly display the auto-detected mapping along with the list of auto-skipped chapters and reasons (e.g. `Skipped 'CONTENTS' (id004): detected front-matter TOC`).
    - If manual `--skip-spine` or explicit mapping is provided, respect user configuration over auto-matching.
 
@@ -48,7 +48,7 @@ An automated mapping mechanism should intelligently align audio tracks to the co
 - [x] **Title Normalization:** Normalizer recognizes chapter numbering equivalences (`"One"`, `"Chapter 1"`, `"Chapter I"`, `"Part One"`).
 - [x] **Known Section Filtering:** Standard non-narrated sections (`Contents`, `Dramatis Personae`, `Timeline`, `Copyright`) are identified.
 - [x] **Monotonic Subsequence Matching:** Alignment preserves document order and finds the optimal matching sequence when EPUB chapter count exceeds audio unit count.
-- [x] **Real-Book Verification:** Running `echopage build --dry-run --auto-map` on *Horus Rising* (30 spine chapters vs 25 audio units) automatically matches all 25 chapters without needing manual `--skip-spine`.
+- [x] **Real-Book Verification:** Running `echobook build --dry-run --auto-map` on *Horus Rising* (30 spine chapters vs 25 audio units) automatically matches all 25 chapters without needing manual `--skip-spine`.
 - [x] **Diagnostic Dry-Run Display:** `--dry-run` clearly prints which chapters were matched and which chapters were auto-skipped with reasons.
 - [x] **Precedence:** Manual `--skip-spine` or `--map` overrides automatic mapping.
 - [x] **Test Suite:** Unit tests for title extraction, normalization, subsequence alignment, and CLI integration pass with 100% success rate.

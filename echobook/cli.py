@@ -5,15 +5,15 @@ import shutil
 import sys
 from pathlib import Path
 
-from echopage import aligner, audio, decryptor, packager, parser as epub_parser
-from echopage.logger import format_duration, setup_logging, timed_step
+from echobook import aligner, audio, decryptor, packager, parser as epub_parser
+from echobook.logger import format_duration, setup_logging, timed_step
 
-log = logging.getLogger("echopage.cli")
+log = logging.getLogger("echobook.cli")
 
 
 def build_parser():
     p = argparse.ArgumentParser(
-        prog="echopage",
+        prog="echobook",
         description="Add synced audio narration to an EPUB.",
     )
     p.add_argument("--verbose", action="store_true", help="enable debug logging")
@@ -174,7 +174,7 @@ def _phase(name, fn, *a, **kw):
 
 
 def run_build(args):
-    work_dir = Path(args.work_dir) if args.work_dir else Path(f".echopage_build_{Path(args.epub).stem}")
+    work_dir = Path(args.work_dir) if args.work_dir else Path(f".echobook_build_{Path(args.epub).stem}")
     work_dir.mkdir(parents=True, exist_ok=True)
     epub_dir = work_dir / "epub"
     epub_dir.mkdir(parents=True, exist_ok=True)

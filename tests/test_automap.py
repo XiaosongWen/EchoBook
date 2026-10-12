@@ -7,8 +7,8 @@ from pathlib import Path
 from lxml import etree
 import pytest
 
-from echopage.audio import AudioUnit
-from echopage.automap import (
+from echobook.audio import AudioUnit
+from echobook.automap import (
     align_chapter_subsequence,
     detect_non_narrated_section,
     normalize_chapter_title,
@@ -16,13 +16,13 @@ from echopage.automap import (
     parse_word_number,
     title_similarity,
 )
-from echopage.parser import (
+from echobook.parser import (
     Sentence,
     extract_chapter_title,
     extract_navigation_metadata,
     parse_epub,
 )
-from echopage import aligner, cli
+from echobook import aligner, cli
 
 
 # ---------------------------------------------------------------------------

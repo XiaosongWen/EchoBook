@@ -19,11 +19,11 @@ from typing import Any, Iterable, Sequence, Union
 
 from lxml import etree
 
-from echopage.alignment import AlignedChapter, TimelineEntry, load_alignment
-from echopage.logger import format_duration
-from echopage.parser import BLOCK_TAGS, PackageItem, read_package
+from echobook.alignment import AlignedChapter, TimelineEntry, load_alignment
+from echobook.logger import format_duration
+from echobook.parser import BLOCK_TAGS, PackageItem, read_package
 
-log = logging.getLogger("echopage.packager")
+log = logging.getLogger("echobook.packager")
 
 SMIL_NAMESPACE = "http://www.w3.org/ns/SMIL"
 EPUB_OPS_NAMESPACE = "http://www.idpf.org/2007/ops"
@@ -1903,13 +1903,13 @@ def package(
     if work_dir is not None:
         target_dir = Path(work_dir)
         if not target_dir.is_dir():
-            from echopage import parser as epub_parser
+            from echobook import parser as epub_parser
             epub_parser.unpack(epub, target_dir)
         _assemble(target_dir)
     else:
-        with tempfile.TemporaryDirectory(prefix="echopage_pack_") as tmp_dir:
+        with tempfile.TemporaryDirectory(prefix="echobook_pack_") as tmp_dir:
             temp_target = Path(tmp_dir)
-            from echopage import parser as epub_parser
+            from echobook import parser as epub_parser
             epub_parser.unpack(epub, temp_target)
             _assemble(temp_target)
 

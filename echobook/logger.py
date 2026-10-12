@@ -1,4 +1,4 @@
-"""Logging framework and timing utilities for EchoPage."""
+"""Logging framework and timing utilities for EchoBook."""
 
 from __future__ import annotations
 
@@ -40,7 +40,7 @@ def format_duration(seconds: float) -> str:
     return f"{hours}h {minutes}m {rem_seconds:.0f}s"
 
 
-class EchoPageFormatter(logging.Formatter):
+class EchoBookFormatter(logging.Formatter):
     """Custom formatter with timestamps, level padding, logger names, and optional ANSI color styling."""
 
     # ANSI Colors
@@ -90,7 +90,7 @@ class EchoPageFormatter(logging.Formatter):
 
         if self.use_color:
             level_color = self.LEVEL_COLORS.get(record.levelno, self.RESET)
-            # Example: [2026-10-10 14:45:00] [INFO ] [echopage.cli] Message...
+            # Example: [2026-10-10 14:45:00] [INFO ] [echobook.cli] Message...
             formatted = (
                 f"{self.CYAN}[{timestamp}]{self.RESET} "
                 f"{level_color}[{level_str}]{self.RESET} "
@@ -100,6 +100,7 @@ class EchoPageFormatter(logging.Formatter):
         else:
             formatted = f"[{timestamp}] [{level_str}] [{logger_name}] {message}"
 
+
         if record.exc_info:
             if not record.exc_text:
                 record.exc_text = self.formatException(record.exc_info)
@@ -107,6 +108,10 @@ class EchoPageFormatter(logging.Formatter):
                 formatted = f"{formatted}\n{record.exc_text}"
 
         return formatted
+
+
+# Backward compatibility alias
+EchoPageFormatter = EchoBookFormatter
 
 
 class TimedStepContext:
@@ -195,16 +200,17 @@ def setup_logging(
     stream: Optional[object] = None,
     use_color: Optional[bool] = None,
 ) -> logging.Logger:
-    """Configure EchoPage unified logging format across the entire application."""
+    """Configure EchoBook unified logging format across the entire application."""
     if level is None:
         level = logging.DEBUG if verbose else logging.INFO
 
     out_stream = _DynamicStream(stream)
 
     root_logger = logging.getLogger()
+    echobook_logger = logging.getLogger("echobook")
     echopage_logger = logging.getLogger("echopage")
 
-    formatter = EchoPageFormatter(use_color=use_color)
+    formatter = EchoBookFormatter(use_color=use_color)
     handler = logging.StreamHandler(out_stream)
     handler.setFormatter(formatter)
     handler.setLevel(level)
@@ -212,9 +218,13 @@ def setup_logging(
     # Remove existing handlers to avoid duplicate lines
     for h in list(root_logger.handlers):
         root_logger.removeHandler(h)
+    for h in list(echobook_logger.handlers):
+        echobook_logger.removeHandler(h)
     for h in list(echopage_logger.handlers):
         echopage_logger.removeHandler(h)
 
+    echobook_logger.setLevel(level)
+    echobook_logger.propagate = True
     echopage_logger.setLevel(level)
     echopage_logger.propagate = True
 
@@ -236,4 +246,4 @@ def setup_logging(
     for q in quiet_loggers:
         logging.getLogger(q).setLevel(logging.WARNING)
 
-    return echopage_logger
+    return echobook_logger

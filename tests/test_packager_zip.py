@@ -8,8 +8,8 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from echopage import packager
-from echopage.packager import (
+from echobook import packager
+from echobook.packager import (
     EpubCheckValidationError,
     PackagerError,
     validate_epubcheck,
@@ -20,7 +20,7 @@ from echopage.packager import (
 @pytest.fixture
 def temp_epub_dir(tmp_path: Path) -> Path:
     """Create a temporary populated EPUB directory ready for packaging."""
-    fixture_dir = Path("tests/fixtures/.echopage_unpack_book")
+    fixture_dir = Path("tests/fixtures/.echobook_unpack_book")
     work = tmp_path / "work"
     shutil.copytree(fixture_dir, work)
 
@@ -138,7 +138,7 @@ def test_validate_epubcheck_failure(tmp_path: Path):
 def test_package_pipeline_creates_real_epub(tmp_path: Path):
     """Test package() produces an actual valid EPUB archive."""
     work_dir = tmp_path / "work"
-    shutil.copytree("tests/fixtures/.echopage_unpack_book", work_dir)
+    shutil.copytree("tests/fixtures/.echobook_unpack_book", work_dir)
 
     alignment_file = Path("tests/fixtures/alignment.sample.json")
     audio_parts = sorted(Path("tests/fixtures/book_parts").glob("*.m4b"))

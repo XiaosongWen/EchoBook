@@ -1,4 +1,4 @@
-"""Pytest fixtures and test suite configuration for EchoPage."""
+"""Pytest fixtures and test suite configuration for EchoBook."""
 
 import shutil
 from pathlib import Path
@@ -14,6 +14,8 @@ def cleanup_test_artifacts():
 
     # Restrict cleanup strictly to test-generated fixtures
     test_artifact_patterns = (
+        ".echobook_build_book*",
+        ".echobook_build_sample*",
         ".echopage_build_book*",
         ".echopage_build_sample*",
         "dummy*.epub",

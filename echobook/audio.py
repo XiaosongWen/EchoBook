@@ -1,4 +1,4 @@
-"""Audio chapter splitting and resampling module for EchoPage."""
+"""Audio chapter splitting and resampling module for EchoBook."""
 
 from __future__ import annotations
 
@@ -11,9 +11,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Sequence, Union
 
-from echopage.logger import format_duration
+from echobook.logger import format_duration
 
-log = logging.getLogger("echopage.audio")
+log = logging.getLogger("echobook.audio")
 
 
 class AudioError(RuntimeError):

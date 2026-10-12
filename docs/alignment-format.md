@@ -1,4 +1,4 @@
-# EchoPage alignment.json Data Contract
+# EchoBook alignment.json Data Contract
 
 ## 1. Overview
 
@@ -104,11 +104,11 @@ The contract enforces the following invariants. Any violation raises `AlignmentV
 
 ## 6. Python API Reference
 
-The `echopage.alignment` module provides typed dataclasses, serializers, deserializers, and validation functions:
+The `echobook.alignment` module provides typed dataclasses, serializers, deserializers, and validation functions:
 
 ### Dataclasses
 ```python
-from echopage.alignment import TimelineEntry, AlignedChapter
+from echobook.alignment import TimelineEntry, AlignedChapter
 
 # Dataclass with attribute and dict-like access
 entry = TimelineEntry(
@@ -132,7 +132,7 @@ d = entry.to_dict()
 
 ### Loading & Saving
 ```python
-from echopage.alignment import load_alignment, save_alignment
+from echobook.alignment import load_alignment, save_alignment
 
 # Save to file or stream (validates automatically)
 save_alignment(chapters, "alignment.json", indent=2)
@@ -143,7 +143,7 @@ chapters = load_alignment("alignment.json")
 
 ### Direct Validation
 ```python
-from echopage.alignment import validate_alignment
+from echobook.alignment import validate_alignment
 
 # Validate in-memory structures or dictionaries
 validate_alignment(chapters)
@@ -151,7 +151,7 @@ validate_alignment(chapters)
 
 ### ID Helpers
 ```python
-from echopage.alignment import format_element_id, is_valid_element_id, parse_element_id
+from echobook.alignment import format_element_id, is_valid_element_id, parse_element_id
 
 formatted = format_element_id(42)  # "mo_s_0042"
 valid = is_valid_element_id("mo_s_0042")  # True
@@ -165,7 +165,7 @@ idx = parse_element_id("mo_s_0042")  # 42
 ```json
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "EchoPage Alignment Format",
+  "title": "EchoBook Alignment Format",
   "description": "Schema for alignment.json contract between aligner and packager",
   "type": "array",
   "items": {

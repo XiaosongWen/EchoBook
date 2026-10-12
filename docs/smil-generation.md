@@ -1,6 +1,6 @@
 # EPUB 3 Media Overlays: SMIL 3.0 Generation
 
-This document details the design, architecture, and usage of the SMIL 3.0 generation subsystem (`echopage.packager`) within EchoPage.
+This document details the design, architecture, and usage of the SMIL 3.0 generation subsystem (`echobook.packager`) within EchoBook.
 
 ---
 
@@ -10,7 +10,7 @@ In EPUB 3 Media Overlays, SMIL (Synchronized Multimedia Integration Language) do
 
 ```mermaid
 flowchart LR
-    A["alignment.json"] --> B["echopage.packager"]
+    A["alignment.json"] --> B["echobook.packager"]
     C["Audio Assets"] --> B
     D["Injected XHTML"] --> B
     B --> E["chapter01.smil"]
@@ -72,7 +72,7 @@ In addition, OPF manifest metadata (Task 12) requires duration formatted as `HH:
 ### Clock Utilities
 
 ```python
-from echopage.packager import format_smil_clock, parse_smil_clock, format_clock_hms
+from echobook.packager import format_smil_clock, parse_smil_clock, format_clock_hms
 
 # Milliseconds to SMIL clock
 format_smil_clock(2340)  # "2.340s"
@@ -88,14 +88,14 @@ format_clock_hms(3723456)  # "01:02:03.456"
 
 ## 4. `SmilDuration` and `SmilMetadata` Data Structures
 
-To satisfy the contract that the per-SMIL duration returned equals the last `clipEnd` while remaining seamlessly compatible with downstream OPF metadata generation, EchoPage defines `SmilDuration(float)`:
+To satisfy the contract that the per-SMIL duration returned equals the last `clipEnd` while remaining seamlessly compatible with downstream OPF metadata generation, EchoBook defines `SmilDuration(float)`:
 
 - **Float compatibility**: Subclasses `float`, so it can be compared with numeric floats (`dur == 23.732`) or summed directly (`sum(...)`).
 - **Clock string equality**: Overloads `__eq__` so `dur == "23.732s"` is `True`.
 - **Properties**: Provides `.ms` (integer milliseconds), `.clock` (`N.NNNs`), and `.hms` (`HH:MM:SS.mmm`).
 
 ```python
-from echopage.packager import SmilDuration
+from echobook.packager import SmilDuration
 
 dur = SmilDuration(23.732, 23732)
 dur == 23.732       # True
@@ -150,7 +150,7 @@ If a timeline entry references an `#element_id` that is not present in the XHTML
 ### Python API
 
 ```python
-from echopage.packager import inject_alignment_spans, generate_smil_playlists
+from echobook.packager import inject_alignment_spans, generate_smil_playlists
 
 # 1. Inject span IDs into unpacked EPUB XHTML files
 inject_alignment_spans(work_dir="unpacked_epub", alignment="alignment.json")
@@ -169,12 +169,12 @@ for spine_id, meta in smil_results.items():
 ### CLI Command
 
 ```bash
-echopage generate-smil <work_dir> <alignment_json> [--audio <audio_source>]
+echobook generate-smil <work_dir> <alignment_json> [--audio <audio_source>]
 ```
 
 Example:
 ```bash
-echopage generate-smil unpacked_book alignment.json --audio audio_parts/
+echobook generate-smil unpacked_book alignment.json --audio audio_parts/
 ```
 Output:
 ```

@@ -7,8 +7,8 @@ from pathlib import Path
 import pytest
 from lxml import etree
 
-from echopage import cli, packager
-from echopage.packager import (
+from echobook import cli, packager
+from echobook.packager import (
     OPF_NAMESPACE,
     OpfUpdateError,
     SmilDuration,
@@ -24,7 +24,7 @@ from echopage.packager import (
 @pytest.fixture
 def temp_unpacked_epub(tmp_path: Path) -> Path:
     """Create a temporary unpacked EPUB fixture directory."""
-    fixture_dir = Path("tests/fixtures/.echopage_unpack_book")
+    fixture_dir = Path("tests/fixtures/.echobook_unpack_book")
     target = tmp_path / "book_unpacked"
     shutil.copytree(fixture_dir, target)
     return target

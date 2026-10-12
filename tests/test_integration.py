@@ -1,4 +1,4 @@
-"""End-to-end integration tests for EchoPage build pipeline (Task 14)."""
+"""End-to-end integration tests for EchoBook build pipeline (Task 14)."""
 
 import shutil
 import zipfile
@@ -7,8 +7,8 @@ from unittest.mock import patch
 
 import pytest
 
-from echopage.cli import main
-from echopage.alignment import load_alignment
+from echobook.cli import main
+from echobook.alignment import load_alignment
 
 
 @pytest.fixture
@@ -34,7 +34,7 @@ def test_end_to_end_build_from_fixtures(build_workspace: dict, monkeypatch):
     """Test full build pipeline produces a valid EPUB with Media Overlays."""
     sample_alignment = load_alignment(Path("tests/fixtures/alignment.sample.json"))
     # Mock aligner.align to return sample alignment for instant execution
-    monkeypatch.setattr("echopage.aligner.align", lambda *a, **kw: sample_alignment)
+    monkeypatch.setattr("echobook.aligner.align", lambda *a, **kw: sample_alignment)
 
     args = [
         "build",
@@ -69,7 +69,7 @@ def test_build_caching_and_force(build_workspace: dict, monkeypatch, capsys: pyt
         align_calls.append(True)
         return sample_alignment
 
-    monkeypatch.setattr("echopage.aligner.align", mock_align)
+    monkeypatch.setattr("echobook.aligner.align", mock_align)
 
     base_args = [
         "build",
@@ -107,7 +107,7 @@ def test_keep_temp_cleans_up_scratch_wavs(build_workspace: dict, monkeypatch):
         (wav_dir / "temp.wav").write_bytes(b"wav")
         return sample_alignment
 
-    monkeypatch.setattr("echopage.aligner.align", mock_align)
+    monkeypatch.setattr("echobook.aligner.align", mock_align)
 
     # Run without --keep-temp: scratch WAV dir should be cleaned up
     main([
@@ -138,7 +138,7 @@ def test_phase_failure_reports_phase_and_hint(build_workspace: dict, monkeypatch
     def fail_parse(*a, **kw):
         raise ValueError("Simulated corrupt EPUB parse error")
 
-    monkeypatch.setattr("echopage.parser.parse", fail_parse)
+    monkeypatch.setattr("echobook.parser.parse", fail_parse)
 
     args = [
         "build",

@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from echopage.cli import main
+from echobook.cli import main
 
 
 @pytest.fixture
@@ -12,7 +12,7 @@ def files(tmp_path, monkeypatch):
     audio = tmp_path / "a.m4b"
     shutil.copy(Path(__file__).parent / "fixtures" / "book.epub", epub)
     audio.write_bytes(b"x")
-    monkeypatch.setattr("echopage.aligner.align", lambda *a, **kw: [])
+    monkeypatch.setattr("echobook.aligner.align", lambda *a, **kw: [])
     return ["build", "--epub", str(epub), "--audio", str(audio),
             "--output", str(tmp_path / "out.epub"),
             "--work-dir", str(tmp_path / "work")]
@@ -85,7 +85,7 @@ def test_cli_build_aax_with_activation_bytes_succeeds(tmp_path, capsys):
     with pytest.MonkeyPatch.context() as mp:
         from unittest.mock import MagicMock
         mp.setattr("subprocess.run", lambda *a, **kw: MagicMock(returncode=0, stdout="", stderr=""))
-        mp.setattr("echopage.aligner.align", lambda *a, **kw: [])
+        mp.setattr("echobook.aligner.align", lambda *a, **kw: [])
         code = main(cmd)
     assert code == 0
     out = capsys.readouterr().out
@@ -163,14 +163,14 @@ def test_cli_align_subcommand(tmp_path, capsys, monkeypatch):
     fake_timeline = [
         {"element_id": "mo_s_0001", "text": "Sentence 1", "start_ms": 100, "end_ms": 1500, "confidence": 0.95}
     ]
-    from echopage.aligner import AlignedChapter, TimelineEntry
+    from echobook.aligner import AlignedChapter, TimelineEntry
     fake_ch = AlignedChapter({
         "spine_item_id": "ch01",
         "xhtml_filename": "ch01.xhtml",
         "audio_filename": "part_0.m4b",
         "timeline": [TimelineEntry(t) for t in fake_timeline],
     })
-    monkeypatch.setattr("echopage.aligner.align", lambda *a, **kw: [fake_ch])
+    monkeypatch.setattr("echobook.aligner.align", lambda *a, **kw: [fake_ch])
 
     code = main(["align", str(epub), str(audio), "--json-out", str(out_json), "--work-dir", str(tmp_path / "work")])
     assert code == 0
@@ -188,7 +188,7 @@ def test_cli_generate_smil_missing_file(capsys):
 
 
 def test_cli_generate_smil_subcommand(tmp_path, capsys):
-    from echopage import parser as epub_parser, packager
+    from echobook import parser as epub_parser, packager
     epub = Path(__file__).parent / "fixtures" / "book.epub"
     align_file = Path(__file__).parent / "fixtures" / "alignment.sample.json"
     audio_dir = Path(__file__).parent / "fixtures" / "book_parts"
@@ -263,7 +263,7 @@ def test_cli_build_dry_run_split_false(monkeypatch, capsys, tmp_path):
     def fail_on_split(*a, **kw):
         raise AssertionError("split_audio should NOT be called during --dry-run!")
 
-    monkeypatch.setattr("echopage.audio.split_audio", fail_on_split)
+    monkeypatch.setattr("echobook.audio.split_audio", fail_on_split)
 
     code = main(["build", "--epub", str(epub), "--audio", str(audio), "--output", str(out_file), "--dry-run", "--work-dir", str(tmp_path / "work")])
     assert code == 0
@@ -272,19 +272,19 @@ def test_cli_build_dry_run_split_false(monkeypatch, capsys, tmp_path):
 
 
 def test_cli_build_work_dir_preserves_alignment_cache(monkeypatch, tmp_path):
-    """Verify that build preserves default .echopage_build_<stem> and alignment.json for cache reuse."""
-    from echopage.alignment import load_alignment
+    """Verify that build preserves default .echobook_build_<stem> and alignment.json for cache reuse."""
+    from echobook.alignment import load_alignment
 
     fixtures_dir = Path(__file__).parent / "fixtures"
     epub = fixtures_dir / "book.epub"
     audio_parts = sorted((fixtures_dir / "book_parts").glob("*.m4b"))
 
     sample_alignment = load_alignment(fixtures_dir / "alignment.sample.json")
-    monkeypatch.setattr("echopage.aligner.align", lambda *a, **kw: sample_alignment)
+    monkeypatch.setattr("echobook.aligner.align", lambda *a, **kw: sample_alignment)
 
-    # Change directory to tmp_path so default .echopage_build_book is created inside tmp_path
+    # Change directory to tmp_path so default .echobook_build_book is created inside tmp_path
     monkeypatch.chdir(tmp_path)
-    default_work_dir = tmp_path / ".echopage_build_book"
+    default_work_dir = tmp_path / ".echobook_build_book"
 
     out_epub = tmp_path / "narrated.epub"
     code = main(["build", "--epub", str(epub), "--audio", *[str(p) for p in audio_parts], "--output", str(out_epub)])

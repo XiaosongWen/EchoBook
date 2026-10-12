@@ -1,6 +1,6 @@
-# Audio Basics Primer for EchoPage
+# Audio Basics Primer for EchoBook
 
-This guide provides an overview of audio fundamentals, container formats, codecs, DRM handling, chapter metadata, and timestamp conventions relevant to EchoPage's automated pipeline.
+This guide provides an overview of audio fundamentals, container formats, codecs, DRM handling, chapter metadata, and timestamp conventions relevant to EchoBook's automated pipeline.
 
 ---
 
@@ -84,7 +84,7 @@ ffmpeg -i input.mp3 -ac 1 -ar 16000 scratch/sample_16k.wav
 
 ## 5. Timestamp Conventions: Milliseconds vs. Seconds
 
-In EchoPage, timestamps are handled in two different formats depending on the pipeline stage:
+In EchoBook, timestamps are handled in two different formats depending on the pipeline stage:
 
 1. **Pipeline & Intermediate JSON (`alignment.json`)**:
    - Time unit: **Integer Milliseconds (`ms`)**.
@@ -113,7 +113,7 @@ In EchoPage, timestamps are handled in two different formats depending on the pi
 
 ## 6. Practical FFmpeg Command Reference
 
-Below are the key commands used by EchoPage and how to interpret their results.
+Below are the key commands used by EchoBook and how to interpret their results.
 
 ### 6.1 Inspecting Chapters & Duration with `ffprobe`
 ```bash

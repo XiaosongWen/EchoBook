@@ -1,6 +1,6 @@
 # WhisperX Environment Spike Notes
 
-This document summarizes findings from spiking the WhisperX speech transcription and forced-alignment pipeline for EchoPage on Apple Silicon (macOS).
+This document summarizes findings from spiking the WhisperX speech transcription and forced-alignment pipeline for EchoBook on Apple Silicon (macOS).
 
 ---
 
@@ -71,7 +71,7 @@ When executing WhisperX with the `small` model and English language alignment:
 - **`align_device="mps"`**: **Supported, but slower.** PyTorch successfully loads and runs the wav2vec2 model on Apple Silicon MPS (`torch.backends.mps.is_available() == True`). However, due to GPU dispatch and synchronization overhead on small batch sizes, alignment took 2.12s (21x realtime) on MPS versus 1.06s on CPU.
 
 ### Cross-Platform Hardware & Model Auto-Selection (Mac vs PC)
-To seamlessly maximize performance across macOS (Apple Silicon/Intel) and PC (Windows/Linux with optional NVIDIA CUDA GPUs), EchoPage automatically probes hardware capabilities:
+To seamlessly maximize performance across macOS (Apple Silicon/Intel) and PC (Windows/Linux with optional NVIDIA CUDA GPUs), EchoBook automatically probes hardware capabilities:
 
 ```python
 import torch
@@ -169,7 +169,7 @@ We verified the generated word timings against the source audio and chapter boun
 
 ## 7. Conclusions for Pipeline Architecture (Task 08 & Beyond)
 
-1. **Keep CLI and default dependencies lightweight**: Keep `align` as an extra (`uv pip install -e ".[align]"`). The core EPUB parser, audio splitters, and packager do not require PyTorch. EchoPage uses `uv` exclusively.
+1. **Keep CLI and default dependencies lightweight**: Keep `align` as an extra (`uv pip install -e ".[align]"`). The core EPUB parser, audio splitters, and packager do not require PyTorch. EchoBook uses `uv` exclusively.
 2. **Apple Silicon default device**: Default to `device="cpu"` and `compute_type="int8"` on macOS. Attempting `device="mps"` fails for Whisper transcription.
-3. **Audio format**: WhisperX expects 16 kHz mono WAV input. The existing `echopage to-wav` / `to_wav16k()` utility produces the exact format required.
+3. **Audio format**: WhisperX expects 16 kHz mono WAV input. The existing `echobook to-wav` / `to_wav16k()` utility produces the exact format required.
 4. **Alignment Output Schema**: The resulting segment and word structures (`word`, `start`, `end`, `score`) provide the necessary timestamps for Task 08 text-to-audio matching and Task 09 alignment JSON generation.

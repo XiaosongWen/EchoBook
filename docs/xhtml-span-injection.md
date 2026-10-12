@@ -13,7 +13,7 @@ EPUB 3 Media Overlays synchronize audio narration with text by having SMIL docum
 
 To enable reading systems (Apple Books, Thorium, Readium, Kobo) to highlight the currently spoken sentence, each aligned sentence in the original XHTML must be wrapped in a `<span id="mo_s_xxxx">...</span>` element.
 
-The module `echopage.packager` implements this transformation with strict guarantees:
+The module `echobook.packager` implements this transformation with strict guarantees:
 1. **100% Text Invariant**: Visible text (`''.join(root.itertext())`) is completely unaltered.
 2. **Strict ID Uniqueness**: Every `element_id` in `alignment.json` appears **exactly once** as an `id` in the XHTML.
 3. **XML Validity**: Output preserves the XML declaration, XHTML namespace (`http://www.w3.org/1999/xhtml`), and DOCTYPE (`<!DOCTYPE html>`).
@@ -26,7 +26,7 @@ The module `echopage.packager` implements this transformation with strict guaran
 
 ### The Challenge
 
-In XML and XHTML, elements form a strict hierarchy. A sentence extracted by the tokenizer (`echopage.parser`) may start in a parent block's text, cross into an inline element, and continue after the inline element:
+In XML and XHTML, elements form a strict hierarchy. A sentence extracted by the tokenizer (`echobook.parser`) may start in a parent block's text, cross into an inline element, and continue after the inline element:
 
 ```html
 <p>
@@ -73,7 +73,7 @@ When inserting new elements into an `lxml.etree` node using `.insert(index, chil
 - Inserting into early child indices shifts the indices of subsequent siblings.
 - Modifying a parent's `.text` before `.tail` can cause index drift.
 
-To prevent this, `echopage.packager` applies replacements in **reverse order of segments**:
+To prevent this, `echobook.packager` applies replacements in **reverse order of segments**:
 1. Tails of deep descendants are modified first.
 2. Descendant texts are modified next.
 3. Parent tails and texts are modified last.
@@ -100,7 +100,7 @@ Source XHTML documents often already contain IDs on chapters, sections, or figur
 Batch helper that processes all chapters in an unpacked EPUB work directory:
 
 ```python
-from echopage.packager import inject_alignment_spans
+from echobook.packager import inject_alignment_spans
 
 # Injects spans into all chapters in-place in work_dir
 results = inject_alignment_spans(
@@ -115,7 +115,7 @@ results = inject_alignment_spans(
 Low-level single-document injector:
 
 ```python
-from echopage.packager import inject_spans_into_xhtml
+from echobook.packager import inject_spans_into_xhtml
 
 doc = inject_spans_into_xhtml(
     xhtml_source="chapter01.xhtml",
@@ -128,7 +128,7 @@ doc = inject_spans_into_xhtml(
 Traverse element tree returning `[(node, "text" | "tail", text_str)]`:
 
 ```python
-from echopage.packager import collect_text_segments
+from echobook.packager import collect_text_segments
 
 segments = collect_text_segments(block_elem)
 ```
@@ -137,18 +137,18 @@ segments = collect_text_segments(block_elem)
 
 ## CLI Usage
 
-The EchoPage CLI includes the `inject-spans` subcommand for direct terminal execution:
+The EchoBook CLI includes the `inject-spans` subcommand for direct terminal execution:
 
 ```bash
 # Inject span IDs into an unpacked EPUB directory
-echopage inject-spans ./my_books/.unpacked ./my_books/alignment.json
+echobook inject-spans ./my_books/.unpacked ./my_books/alignment.json
 ```
 
 ---
 
 ## Document Sanitization & Strict EPUB 3 Compliance
 
-Beyond span ID injection, modern strict reading systems (such as **Apple Books** on iOS and macOS, and EPUBCheck validators) enforce strict XML serialization and HTML5 encoding rules. `echopage.packager` runs an automated document sanitization pass (`sanitize_xhtml_documents`) across all content files:
+Beyond span ID injection, modern strict reading systems (such as **Apple Books** on iOS and macOS, and EPUBCheck validators) enforce strict XML serialization and HTML5 encoding rules. `echobook.packager` runs an automated document sanitization pass (`sanitize_xhtml_documents`) across all content files:
 
 1. **Encoding Declaration Normalization**:
    - Removes legacy or invalid `<meta http-equiv="Content-Type" content="...">` declarations (e.g. artifacts from Word processors declaring `content="http://www.w3.org/1999/xhtml; charset=utf-8"`).

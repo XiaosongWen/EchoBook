@@ -12,9 +12,9 @@ from typing import Any, Sequence, Union
 
 from lxml import etree
 
-from echopage.logger import format_duration
+from echobook.logger import format_duration
 
-log = logging.getLogger("echopage.parser")
+log = logging.getLogger("echobook.parser")
 
 
 class EpubError(RuntimeError):
@@ -624,7 +624,7 @@ def parse_epub(
     """
     epub_path = Path(epub_path)
     if work_dir is None:
-        work_dir = epub_path.parent / f".echopage_unpack_{epub_path.stem}"
+        work_dir = epub_path.parent / f".echobook_unpack_{epub_path.stem}"
 
     log.info("Parsing EPUB '%s'...", epub_path.name)
     t_parse = time.perf_counter()

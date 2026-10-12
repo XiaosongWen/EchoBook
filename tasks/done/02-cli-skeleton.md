@@ -1,7 +1,7 @@
 # 02 - CLI Skeleton
 
 ## Background
-The PRD defines one command: `EchoPage build ...`. Build the argument parsing first, with the pipeline steps stubbed, so the interface is fixed early.
+The PRD defines one command: `EchoBook build ...`. Build the argument parsing first, with the pipeline steps stubbed, so the interface is fixed early.
 
 ## What to do
 1. Implement the `build` subcommand with these flags:
@@ -15,7 +15,7 @@ The PRD defines one command: `EchoPage build ...`. Build the argument parsing fi
 4. Add `--verbose` for debug logging.
 
 ## Acceptance Criteria
-- [x] `echopage build --help` lists every flag with a description.
+- [x] `echobook build --help` lists every flag with a description.
 - [x] A missing file gives a clear error and a non-zero exit code.
 - [x] A bad `--activation-bytes` value (e.g. `xyz`) is rejected with a clear error.
 - [x] A valid invocation prints the 4 phase messages (stubs) and exits 0.

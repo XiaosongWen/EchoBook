@@ -7,9 +7,9 @@ from pathlib import Path
 import pytest
 from lxml import etree
 
-from echopage import aligner, cli, packager, parser
-from echopage.alignment import load_alignment
-from echopage.packager import (
+from echobook import aligner, cli, packager, parser
+from echobook.alignment import load_alignment
+from echobook.packager import (
     IdCollisionError,
     PackagerError,
     XhtmlInjectionError,

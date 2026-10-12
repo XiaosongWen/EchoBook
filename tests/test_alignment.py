@@ -1,4 +1,4 @@
-"""Unit tests for the EchoPage alignment.json data contract and validation."""
+"""Unit tests for the EchoBook alignment.json data contract and validation."""
 
 import io
 import json
@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from echopage.alignment import (
+from echobook.alignment import (
     ALIGNMENT_SCHEMA,
     AlignedChapter,
     AlignmentError,
@@ -19,7 +19,7 @@ from echopage.alignment import (
     save_alignment,
     validate_alignment,
 )
-from echopage.parser import parse_epub
+from echobook.parser import parse_epub
 
 
 # ---------------------------------------------------------------------------
@@ -359,7 +359,7 @@ def test_format_element_id():
 
 
 def test_is_valid_element_id():
-    """is_valid_element_id checks standard EchoPage ID format."""
+    """is_valid_element_id checks standard EchoBook ID format."""
     assert is_valid_element_id("mo_s_0001") is True
     assert is_valid_element_id("mo_s_0042") is True
     assert is_valid_element_id("mo_s_12345") is True

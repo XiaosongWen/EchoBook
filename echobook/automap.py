@@ -15,9 +15,9 @@ from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Any, Sequence, Union
 
-from echopage.audio import AudioUnit
+from echobook.audio import AudioUnit
 
-log = logging.getLogger("echopage.automap")
+log = logging.getLogger("echobook.automap")
 
 # Words to integer number mapping
 _WORD_NUMBERS: dict[str, int] = {

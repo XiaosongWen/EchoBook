@@ -11,9 +11,9 @@ import time
 from pathlib import Path
 from typing import Any, Sequence, Union
 
-from echopage.logger import format_duration
+from echobook.logger import format_duration
 
-from echopage.alignment import (
+from echobook.alignment import (
     AlignedChapter,
     AlignmentError,
     AlignmentValidationError,
@@ -24,19 +24,19 @@ from echopage.alignment import (
     save_alignment,
     validate_alignment,
 )
-from echopage.audio import AudioUnit, prepare_audio_units, to_wav16k
-from echopage.automap import (
+from echobook.audio import AudioUnit, prepare_audio_units, to_wav16k
+from echobook.automap import (
     align_chapter_subsequence,
     detect_non_narrated_section,
     normalize_chapter_title,
     title_similarity,
 )
-from echopage.parser import Sentence, parse_epub
+from echobook.parser import Sentence, parse_epub
 
 # Alias for external convenience
 auto_map_chapters = align_chapter_subsequence
 
-log = logging.getLogger("echopage.aligner")
+log = logging.getLogger("echobook.aligner")
 
 
 class AlignmentMismatchError(AlignmentError, ValueError):

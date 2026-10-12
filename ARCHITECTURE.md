@@ -1,10 +1,10 @@
-# System Architecture & Technical Specification: EchoPage (EPUB 3 Media Overlays Generator)
+# System Architecture & Technical Specification: EchoBook (EPUB 3 Media Overlays Generator)
 
 ## 1. Project Goal & Scope
 
-**EchoPage** is an automated end-to-end pipeline application designed to compile synchronized **EPUB 3 with Media Overlays** from standard EPUB books (EPUB 2 or EPUB 3) and audiobooks (DRM-free `.m4b`/`.mp3` or Audible `.aax`/`.aaxc`).
+**EchoBook** is an automated end-to-end pipeline application designed to compile synchronized **EPUB 3 with Media Overlays** from standard EPUB books (EPUB 2 or EPUB 3) and audiobooks (DRM-free `.m4b`/`.mp3` or Audible `.aax`/`.aaxc`).
 
-The system assumes the user possesses the source `.epub` file and corresponding audiobook file(s). EchoPage manages the entire conversion workflow across four operational phases:
+The system assumes the user possesses the source `.epub` file and corresponding audiobook file(s). EchoBook manages the entire conversion workflow across four operational phases:
 
 1. **Audio Preparation & DRM Decryption**: Strips AAX/AAXC container encryption via FFmpeg, probes M4B chapter boundaries, and splits/downsamples audio into 16kHz mono WAV scratch units for acoustic feature extraction.
 2. **EPUB Parsing & Sentence Extraction**: Unpacks EPUB containers securely, parses the OPF spine and navigation documents (TOC/NCX), and deterministically tokenizes paragraph nodes into trackable sentence units while preserving original HTML markup.
@@ -19,27 +19,27 @@ The system assumes the user possesses the source `.epub` file and corresponding 
 [Raw Audio (.m4b/.mp3/.aax/.aaxc)]
        │
        ▼
-[Phase 1: echopage.audio & decryptor]
+[Phase 1: echobook.audio & decryptor]
  ├── Decrypt AAX / AAXC via FFmpeg
  ├── Probe metadata & chapter boundaries (ffprobe)
  └── Split / Resample scratch audio (16kHz mono WAV)
        │
        ├─────────────────────────────────────────┐
        ▼                                         ▼
-[Phase 2: echopage.parser]             [Phase 3: echopage.automap]
+[Phase 2: echobook.parser]             [Phase 3: echobook.automap]
  ├── Safe unpack (prevents Zip Slip)    ├── Filter unvoiced front/back matter
  ├── OPF spine & manifest parsing      ├── Fuzzy chapter-to-audio matching
  └── NLTK sentence tokenization         └── Resolve 1:1 chapter alignment pairs
        │                                         │
        └────────────────────┬────────────────────┘
                             ▼
-              [Phase 3: echopage.aligner]
+              [Phase 3: echobook.aligner]
                ├── Hardware VRAM auto model sizing
                ├── WhisperX phoneme alignment
                └── Cache intermediate alignment.json
                             │
                             ▼
-              [Phase 4: echopage.packager]
+              [Phase 4: echobook.packager]
                ├── XHTML span injection: Inject DOM span IDs (<span id="mo_s_XXXX">)
                ├── SMIL synthesis: Synthesize SMIL 3.0 (<seq>, <par>, <audio>)
                ├── OPF manifest updates: Register overlays & active CSS in package.opf
@@ -53,7 +53,7 @@ The system assumes the user possesses the source `.epub` file and corresponding 
 
 ## 3. Detailed Component Specifications
 
-### 3.1 Audio Processing & DRM Stripping (`echopage.audio`, `echopage.decryptor`)
+### 3.1 Audio Processing & DRM Stripping (`echobook.audio`, `echobook.decryptor`)
 
 #### Responsibilities
 * Format detection for `.aax`, `.aaxc`, `.m4b`, and `.mp3`.
@@ -72,7 +72,7 @@ The system assumes the user possesses the source `.epub` file and corresponding 
 
 ---
 
-### 3.2 EPUB Parser & Text Extraction (`echopage.parser`)
+### 3.2 EPUB Parser & Text Extraction (`echobook.parser`)
 
 #### Responsibilities
 * Extract source EPUB into working directory with strict Zip Slip path traversal validation.
@@ -83,7 +83,7 @@ The system assumes the user possesses the source `.epub` file and corresponding 
 
 ---
 
-### 3.3 Auto-Mapping & Forced Alignment (`echopage.automap`, `echopage.aligner`)
+### 3.3 Auto-Mapping & Forced Alignment (`echobook.automap`, `echobook.aligner`)
 
 #### Responsibilities
 * Solve chapter count discrepancies between EPUB spine and audiobook tracks.
@@ -127,10 +127,10 @@ When `--model-size auto` is specified (default):
 
 ---
 
-### 3.4 EPUB 3 Media Overlays Packager (`echopage.packager`)
+### 3.4 EPUB 3 Media Overlays Packager (`echobook.packager`)
 
 #### Functional Architecture
-The packager module (`echopage/packager.py`) encapsulates the four core packaging phases:
+The packager module (`echobook/packager.py`) encapsulates the four core packaging phases:
 
 #### 1. DOM ID Mutation (`inject_alignment_spans`)
 Wraps each aligned sentence in an inline span containing its unique element ID:
@@ -194,10 +194,10 @@ Generates valid SMIL 3.0 XML documents linking text IDs to audio timestamps:
 
 ## 4. CLI Interface Specification
 
-### Primary Command: `echopage build`
+### Primary Command: `echobook build`
 
 ```bash
-echopage build \
+echobook build \
   --epub ./sources/book.epub \
   --audio ./sources/book.m4b \
   --output ./dist/book_narrated.epub \
@@ -216,7 +216,7 @@ echopage build \
 | `--model-size SIZE` | Optional | `auto` | `auto`, `tiny`, `base`, `small`, `medium`, `large-v1`, `large-v2`, `large-v3` |
 | `--device DEV` | Optional | `auto` | `auto`, `cuda`, `mps`, `cpu` |
 | `--granularity LEVEL` | Optional | `sentence` | `sentence` (default); `word` is reserved in CLI schema |
-| `--work-dir DIR` | Optional | `.echopage_build_<stem>` | Scratch workspace for extraction & caching |
+| `--work-dir DIR` | Optional | `.echobook_build_<stem>` | Scratch workspace for extraction & caching |
 | `--auto-map / --no-auto-map` | Optional | `True` | Heuristic matching of spine chapters to audio |
 | `--skip-spine IDS` | Optional | `None` | Comma-separated spine item IDs to explicitly skip |
 | `--dry-run` | Optional | `False` | Inspect mapping plan without running heavy alignment |
@@ -225,16 +225,16 @@ echopage build \
 | `--verbose` | Optional | `False` | Verbose debug logging |
 
 ### Diagnostic & Step Subcommands
-EchoPage provides isolated subcommands for debugging individual pipeline phases:
-* `echopage probe <audio>`: Inspect audio duration, codec, and embedded chapter markers.
-* `echopage split <audio> --out-dir <dir>`: Extract individual chapters from M4B/MP3.
-* `echopage to-wav <audio> <out.wav>`: Convert audio to 16kHz mono WAV.
-* `echopage decrypt <audio> --out-dir <dir>`: Decrypt AAX/AAXC files.
-* `echopage parse <epub> --work-dir <dir>`: Unpack EPUB and extract chapter sentences.
-* `echopage align <epub> <audio> --json-out <out.json>`: Generate `alignment.json` directly.
-* `echopage inject-spans <work_dir> <alignment.json>`: Inject `<span>` tags into unpacked XHTML.
-* `echopage generate-smil <work_dir> <alignment.json> --audio <dir>`: Synthesize SMIL playlists.
-* `echopage update-opf <work_dir> [--alignment <file>] [--audio <files>]`: Update package manifest.
+EchoBook provides isolated subcommands for debugging individual pipeline phases:
+* `echobook probe <audio>`: Inspect audio duration, codec, and embedded chapter markers.
+* `echobook split <audio> --out-dir <dir>`: Extract individual chapters from M4B/MP3.
+* `echobook to-wav <audio> <out.wav>`: Convert audio to 16kHz mono WAV.
+* `echobook decrypt <audio> --out-dir <dir>`: Decrypt AAX/AAXC files.
+* `echobook parse <epub> --work-dir <dir>`: Unpack EPUB and extract chapter sentences.
+* `echobook align <epub> <audio> --json-out <out.json>`: Generate `alignment.json` directly.
+* `echobook inject-spans <work_dir> <alignment.json>`: Inject `<span>` tags into unpacked XHTML.
+* `echobook generate-smil <work_dir> <alignment.json> --audio <dir>`: Synthesize SMIL playlists.
+* `echobook update-opf <work_dir> [--alignment <file>] [--audio <files>]`: Update package manifest.
 
 ---
 
@@ -242,28 +242,28 @@ EchoPage provides isolated subcommands for debugging individual pipeline phases:
 
 All core modules and technical specifications are 100% implemented, tested, and validated:
 
-- [x] **Module 1: Audio & Decryption (`echopage/audio.py`, `echopage/decryptor.py`)**
+- [x] **Module 1: Audio & Decryption (`echobook/audio.py`, `echobook/decryptor.py`)**
   - [x] Format detector for `.aax`, `.aaxc`, `.m4b`, `.mp3`.
   - [x] Stream-copy decryption runner for AAX & AAXC via FFmpeg.
   - [x] M4B chapter metadata probe & track splitter.
   - [x] 16kHz mono WAV resampler with automatic cleanup.
-- [x] **Module 2: EPUB Parser (`echopage/parser.py`)**
+- [x] **Module 2: EPUB Parser (`echobook/parser.py`)**
   - [x] Safe extraction with zip-slip prevention.
   - [x] OPF package, spine, manifest, and TOC/NCX metadata reading.
   - [x] Deterministic sentence segmentation with inline markup preservation.
-- [x] **Module 3: Alignment & Heuristic Auto-Map (`echopage/aligner.py`, `echopage/automap.py`)**
+- [x] **Module 3: Alignment & Heuristic Auto-Map (`echobook/aligner.py`, `echobook/automap.py`)**
   - [x] Heuristic front/back-matter detection (Title, Copyright, TOC, Dramatis Personae, Timeline).
   - [x] Fuzzy title string and duration ratio matching.
   - [x] WhisperX neural forced alignment pipeline.
   - [x] Hardware-aware VRAM model auto-selection (`auto` -> `large-v3`, `medium`, `small`).
   - [x] Intermediate `alignment.json` serialization and cache invalidation (`--force`).
-- [x] **Module 4: Media Overlays Packager (`echopage/packager.py`)**
+- [x] **Module 4: Media Overlays Packager (`echobook/packager.py`)**
   - [x] Clean inline `<span>` ID injection (`inject_alignment_spans`).
   - [x] SMIL 3.0 XML playlist generation (`generate_chapter_smil`, `copy_chapter_audio`).
   - [x] EPUB 2/3 OPF duration calculation, active class, and manifest overlay binding (`update_opf_manifest`).
   - [x] Standard-compliant zip packaging (`mimetype` uncompressed first) and EPUBCheck validation (`zip_epub_container`).
-- [x] **Module 5: CLI & Automation (`echopage/cli.py`, `setup.sh`, `setup.ps1`)**
+- [x] **Module 5: CLI & Automation (`echobook/cli.py`, `setup.sh`, `setup.ps1`)**
   - [x] Unified CLI with full parameter support and isolated subcommands.
   - [x] Cross-platform automated setup scripts powered exclusively by Astral `uv` (Linux, macOS, Windows PowerShell).
   - [x] Package management standard: Strict reliance on `uv` (`uv venv`, `uv pip install`); `pip` is not used.
-  - [x] 238 unit and integration tests passing.
+  - [x] 254 unit and integration tests passing.

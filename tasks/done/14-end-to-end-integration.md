@@ -1,7 +1,7 @@
 # 14 - End-to-End Integration
 
 ## Background
-Connect all modules behind `echopage build` and prove it works on a real reader.
+Connect all modules behind `echobook build` and prove it works on a real reader.
 
 ## What to do
 1. Wire the pipeline: decrypt (04), chapter split and resample (05), parse (06), align (08), write `alignment.json` (09), package (10-13).
